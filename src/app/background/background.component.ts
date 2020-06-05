@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { TrackingMatchResult, StoredTrackingNumber, TrackingStorage } from 'common/types';
+import { TrackingMatchResult, StoredTrackingNumber, TrackingStorage } from '../common/types';
 import { identity, pipe } from 'rxjs';
 import { unionWith, both, eqBy, prop } from 'ramda';
 
@@ -15,6 +15,7 @@ const splitTrackingNumbers = (data: TrackingMatchResult[]): StoredTrackingNumber
 
 const storeTrackingNumber = (response: TrackingMatchResult[]) => ({ tracking }: TrackingStorage) => pipe(
   splitTrackingNumbers,
+  // @ts-ignore
   unionWith(both(eqBy(prop('courierCode')), eqBy(prop('trackingNumber'))), tracking),
   saveTracking,
 )(response);
