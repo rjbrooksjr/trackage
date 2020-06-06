@@ -39,17 +39,11 @@ var gulp = require('gulp');
     livereload.listen();
 
     watch([
-      // 'src/app/*.html',
-      // 'src/app/scripts/**/*.js',
-      // 'src/app/images/**/*',
-      // 'src/app/styles/**/*',
-      // 'src/app/_locales/**/*.json',
-
       'src/content-script/*.ts',
       'src/app/**/*.ts',
       'src/app/**/*.html',
       'src/app/**/*.scss',
-      // 'dist/**/*.js'
+      'src/manifest.json'
     ]).on('change', gulp.parallel('ng-build', 'content-script'));
 
     watch('src/app/styles.scss/**/*.scss', ['styles']);

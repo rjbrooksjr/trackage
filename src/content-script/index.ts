@@ -24,13 +24,11 @@ const getTrackingNumbers = (carrier: Carrier): TrackingMatchResult => applySpec(
   courierCode: prop('courier_code'),
   trackingNumbers: pipe(
     prop('tracking_numbers'),
-    pipe(map((tn: TrackingData) => pipe(getList, tap(x => console.log('here', tn, x)), filter(x => validator(tn)(getSerialData(x, tn))))(tn)), flatten)
+    pipe(map((tn: TrackingData) => pipe(getList, filter(x => validator(tn)(getSerialData(x, tn))))(tn)), flatten)
   )
 })(carrier) as TrackingMatchResult;
 
 chrome.runtime.onMessage.addListener((_request, _sender, sendResponse) => {
-
-  console.log('got', carriers.map(getTrackingNumbers));
 
   sendResponse(carriers.map(getTrackingNumbers));
 
