@@ -32,7 +32,7 @@ var gulp = require('gulp');
           .pipe(sourcemaps.init({loadMaps: true}))
           .pipe(uglify())
           .pipe(sourcemaps.write('./'))
-          .pipe(gulp.dest('./dist/app/'));
+          .pipe(gulp.dest('./dist'));
   });
 
   gulp.task('watch', () => {

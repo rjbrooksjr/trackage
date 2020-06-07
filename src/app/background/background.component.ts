@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { TrackingMatchResult, StoredTrackingNumber, TrackingStorage } from '../common/types';
 import { identity, pipe } from 'rxjs';
-import { unionWith, both, eqBy, prop } from 'ramda';
+import { unionWith, both, eqBy, prop, split } from 'ramda';
+import { SharedDataService } from '../services/shared-data.service';
 
 const pendingTrackingNumbers: TrackingMatchResult[] = [];
 
@@ -27,11 +28,9 @@ const storeTrackingNumber = (response: TrackingMatchResult[]) => ({ tracking }: 
 })
 export class BackgroundComponent implements OnInit {
 
-  constructor() { }
+  constructor(private sharedDataService: SharedDataService) { }
 
   ngOnInit(): void {
-    console.log('BACKGROUND');
-
     this.addListeners();
   }
 
@@ -39,11 +38,16 @@ export class BackgroundComponent implements OnInit {
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => changeInfo.status === 'complete' && tab.active &&
       chrome.tabs.query({ active: true, currentWindow: true, }, tabs =>
         tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, (response: TrackingMatchResult[]) => {
-          console.log('got', response);
+          console.log('got', splitTrackingNumbers(response));
+          this.sharedDataService.setFoundTracking(splitTrackingNumbers(response));
           response && chrome.storage.local.get('tracking', storeTrackingNumber(response));
+
+          chrome.browserAction.setIcon({
+            path: response && response.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+            tabId: tabs[0].id,
+          });
         })
       )
     );
   }
-
 }
