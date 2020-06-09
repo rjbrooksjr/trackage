@@ -234,11 +234,15 @@ var BackgroundComponent = /** @class */ (function () {
         chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) { return changeInfo.status === 'complete' && tab.active &&
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 return tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, function (response) {
+                    console.log('response', response);
                     console.log('got', splitTrackingNumbers(response));
-                    _this.sharedDataService.setFoundTracking(splitTrackingNumbers(response));
+                    // todo subttract anything in storage
+                    var trackingNumbers = splitTrackingNumbers(response);
+                    _this.sharedDataService.setFoundTracking(trackingNumbers);
                     response && chrome.storage.local.get('tracking', storeTrackingNumber(response));
+                    console.log('woah', response && response.length > 0, response, response.length);
                     chrome.browserAction.setIcon({
-                        path: response && response.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+                        path: trackingNumbers.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
                         tabId: tabs[0].id
                     });
                 });

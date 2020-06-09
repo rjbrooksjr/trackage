@@ -38,12 +38,19 @@ export class BackgroundComponent implements OnInit {
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => changeInfo.status === 'complete' && tab.active &&
       chrome.tabs.query({ active: true, currentWindow: true, }, tabs =>
         tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, (response: TrackingMatchResult[]) => {
+          console.log('response', response);
           console.log('got', splitTrackingNumbers(response));
-          this.sharedDataService.setFoundTracking(splitTrackingNumbers(response));
+
+          // todo subttract anything in storage
+          const trackingNumbers = splitTrackingNumbers(response);
+
+          this.sharedDataService.setFoundTracking(trackingNumbers);
           response && chrome.storage.local.get('tracking', storeTrackingNumber(response));
 
+          console.log('woah', response && response.length > 0, response, response.length);
+
           chrome.browserAction.setIcon({
-            path: response && response.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+            path: trackingNumbers.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
             tabId: tabs[0].id,
           });
         })
