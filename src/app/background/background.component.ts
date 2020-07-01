@@ -27,6 +27,7 @@ const storeTrackingNumber = (response: TrackingMatchResult[]) => ({ tracking }: 
   styleUrls: ['./background.component.scss']
 })
 export class BackgroundComponent implements OnInit {
+  foundTracking: StoredTrackingNumber[] = [];
 
   constructor(private sharedDataService: SharedDataService) { }
 
@@ -44,7 +45,11 @@ export class BackgroundComponent implements OnInit {
           // todo subttract anything in storage
           const trackingNumbers = splitTrackingNumbers(response);
 
-          this.sharedDataService.setFoundTracking(trackingNumbers);
+          this.foundTracking = trackingNumbers;
+
+          console.log('ok this', this.foundTracking, trackingNumbers);
+
+          // this.sharedDataService.setFoundTracking(trackingNumbers);
           response && chrome.storage.local.get('tracking', storeTrackingNumber(response));
 
           console.log('woah', response && response.length > 0, response, response.length);
@@ -56,5 +61,19 @@ export class BackgroundComponent implements OnInit {
         })
       )
     );
+
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      console.log('i got message', request);
+
+      switch (request.command) {
+        case 'getTracking':
+          console.log('getTracking', this.foundTracking);
+          sendResponse(this.foundTracking);
+          break;
+        case 'saveTracking':
+          storeTrackingNumber(response.data);
+          break;
+      }
+    });
   }
 }

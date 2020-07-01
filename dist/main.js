@@ -225,6 +225,7 @@ var storeTrackingNumber = function (response) { return function (_a) {
 var BackgroundComponent = /** @class */ (function () {
     function BackgroundComponent(sharedDataService) {
         this.sharedDataService = sharedDataService;
+        this.foundTracking = [];
     }
     BackgroundComponent.prototype.ngOnInit = function () {
         this.addListeners();
@@ -238,7 +239,9 @@ var BackgroundComponent = /** @class */ (function () {
                     console.log('got', splitTrackingNumbers(response));
                     // todo subttract anything in storage
                     var trackingNumbers = splitTrackingNumbers(response);
-                    _this.sharedDataService.setFoundTracking(trackingNumbers);
+                    _this.foundTracking = trackingNumbers;
+                    console.log('ok this', _this.foundTracking, trackingNumbers);
+                    // this.sharedDataService.setFoundTracking(trackingNumbers);
                     response && chrome.storage.local.get('tracking', storeTrackingNumber(response));
                     console.log('woah', response && response.length > 0, response, response.length);
                     chrome.browserAction.setIcon({
@@ -247,6 +250,15 @@ var BackgroundComponent = /** @class */ (function () {
                     });
                 });
             }); });
+        chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+            console.log('i got message', request);
+            switch (request.command) {
+                case 'getTracking':
+                    console.log('getTracking', _this.foundTracking);
+                    sendResponse(_this.foundTracking);
+                    break;
+            }
+        });
     };
     BackgroundComponent.ɵfac = function BackgroundComponent_Factory(t) { return new (t || BackgroundComponent)(i0.ɵɵdirectiveInject(i1.SharedDataService)); };
     BackgroundComponent.ɵcmp = i0.ɵɵdefineComponent({ type: BackgroundComponent, selectors: [["app-background"]], decls: 2, vars: 0, template: function BackgroundComponent_Template(rf, ctx) { if (rf & 1) {
@@ -309,18 +321,49 @@ exports.environment = {
 exports.__esModule = true;
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
+var i1 = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm5/common.js");
+function ListComponent_p_2_Template(rf, ctx) { if (rf & 1) {
+    var _r3 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "p");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementStart(2, "a", 1);
+    i0.ɵɵlistener("click", function ListComponent_p_2_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r3); var tracking_r1 = ctx.$implicit; var ctx_r2 = i0.ɵɵnextContext(); return ctx_r2.add(tracking_r1); });
+    i0.ɵɵtext(3, "add");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    var tracking_r1 = ctx.$implicit;
+    i0.ɵɵadvance(1);
+    i0.ɵɵtextInterpolate1("pl ", tracking_r1.courierCode, " ");
+} }
 var ListComponent = /** @class */ (function () {
-    function ListComponent() {
+    function ListComponent(appRef) {
+        this.appRef = appRef;
+        this.foundTracking = [];
+        this.fooTest = [];
+        this.console = console;
     }
     ListComponent.prototype.ngOnInit = function () {
-        console.log('LIST');
+        var _this = this;
+        chrome.runtime.sendMessage({ command: 'getTracking' }, function (response) {
+            chrome.extension.getBackgroundPage().console.log('RESPONSE', response);
+            _this.foundTracking = response;
+            _this.appRef.tick();
+        });
     };
-    ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(); };
-    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 2, vars: 0, template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
-            i0.ɵɵelementStart(0, "p");
-            i0.ɵɵtext(1, "list works!!!omggghhh a lotssss");
+    ListComponent.prototype.add = function (tracking) {
+        chrome.extension.getBackgroundPage().console.log('i will add', tracking);
+    };
+    ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef)); };
+    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 3, vars: 1, consts: [[4, "ngFor", "ngForOf"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
+            i0.ɵɵelementStart(0, "h1");
+            i0.ɵɵtext(1, "Hey7");
             i0.ɵɵelementEnd();
-        } }, styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
+            i0.ɵɵtemplate(2, ListComponent_p_2_Template, 4, 1, "p", 0);
+        } if (rf & 2) {
+            i0.ɵɵadvance(2);
+            i0.ɵɵproperty("ngForOf", ctx.foundTracking);
+        } }, directives: [i1.NgForOf], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
     return ListComponent;
 }());
 exports.ListComponent = ListComponent;
@@ -331,7 +374,7 @@ exports.ListComponent = ListComponent;
                 templateUrl: './list.component.html',
                 styleUrls: ['./list.component.scss']
             }]
-    }], function () { return []; }, null); })();
+    }], function () { return [{ type: i0.ApplicationRef }]; }, null); })();
 
 
 /***/ }),
@@ -351,10 +394,11 @@ var rxjs_1 = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var SharedDataService = /** @class */ (function () {
     function SharedDataService() {
-        this.foundTrackingMessage = new rxjs_1.BehaviorSubject([]);
+        this.foundTrackingMessage = new rxjs_1.BehaviorSubject([{ courierCode: 'foo', trackingNumber: '123', status: 'sss' }]);
         this.foundTracking = this.foundTrackingMessage.asObservable();
     }
     SharedDataService.prototype.setFoundTracking = function (tracking) {
+        console.log('found', tracking);
         this.foundTrackingMessage.next(tracking);
     };
     SharedDataService.ɵfac = function SharedDataService_Factory(t) { return new (t || SharedDataService)(); };

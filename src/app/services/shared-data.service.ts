@@ -6,12 +6,13 @@ import { StoredTrackingNumber } from '../common/types';
   providedIn: 'root'
 })
 export class SharedDataService {
-  private foundTrackingMessage = new BehaviorSubject([]);
+  private foundTrackingMessage = new BehaviorSubject([{ courierCode: 'foo', trackingNumber: '123', status: 'sss' }]);
   foundTracking = this.foundTrackingMessage.asObservable();
 
   constructor() { }
 
   setFoundTracking(tracking: StoredTrackingNumber[]) {
+    console.log('found', tracking);
     this.foundTrackingMessage.next(tracking);
   }
 }
