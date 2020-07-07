@@ -213,22 +213,28 @@ var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i1 = __webpack_require__(/*! ../services/shared-data.service */ "./src/app/services/shared-data.service.ts");
 var pendingTrackingNumbers = [];
-var saveTracking = function (tracking) { return chrome.storage.local.set({ tracking: tracking }, function () { }); };
+var saveTracking = function (sendResponse) { return function (tracking) {
+    console.log('ok saving', tracking);
+    chrome.storage.local.set({ tracking: tracking });
+}; };
 var refresh = function (x) { return rxjs_1.identity; };
 var splitTrackingNumbers = function (data) { return data.map(function (row) { return row.trackingNumbers.map(function (trackingNumber) { return ({ courierCode: row.courierCode, trackingNumber: trackingNumber.replace(/[^a-zA-Z\d]/g, '') }); }); }).flat(Infinity); };
-var storeTrackingNumber = function (response) { return function (_a) {
-    var tracking = _a.tracking;
-    return rxjs_1.pipe(splitTrackingNumbers, 
-    // @ts-ignore
-    ramda_1.unionWith(ramda_1.both(ramda_1.eqBy(ramda_1.prop('courierCode')), ramda_1.eqBy(ramda_1.prop('trackingNumber'))), tracking), saveTracking)(response);
-}; };
+var storeTrackingNumber = function (response, storedTracking, sendResponse) { return rxjs_1.pipe(
+// @ts-ignore
+ramda_1.unionWith(ramda_1.both(ramda_1.eqBy(ramda_1.prop('courierCode')), ramda_1.eqBy(ramda_1.prop('trackingNumber'))), storedTracking), saveTracking(sendResponse))(response); };
 var BackgroundComponent = /** @class */ (function () {
     function BackgroundComponent(sharedDataService) {
         this.sharedDataService = sharedDataService;
         this.foundTracking = [];
+        this.storedTracking = [];
     }
     BackgroundComponent.prototype.ngOnInit = function () {
+        var _this = this;
         this.addListeners();
+        chrome.storage.local.get('tracking', function (_a) {
+            var tracking = _a.tracking;
+            return _this.storedTracking = tracking;
+        });
     };
     BackgroundComponent.prototype.addListeners = function () {
         var _this = this;
@@ -237,16 +243,14 @@ var BackgroundComponent = /** @class */ (function () {
                 return tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, function (response) {
                     console.log('response', response);
                     console.log('got', splitTrackingNumbers(response));
-                    // todo subttract anything in storage
-                    var trackingNumbers = splitTrackingNumbers(response);
-                    _this.foundTracking = trackingNumbers;
-                    console.log('ok this', _this.foundTracking, trackingNumbers);
-                    // this.sharedDataService.setFoundTracking(trackingNumbers);
-                    response && chrome.storage.local.get('tracking', storeTrackingNumber(response));
-                    console.log('woah', response && response.length > 0, response, response.length);
-                    chrome.browserAction.setIcon({
-                        path: trackingNumbers.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
-                        tabId: tabs[0].id
+                    chrome.storage.local.get('tracking', function (stored) {
+                        // todo subttract anything in storage
+                        _this.foundTracking = splitTrackingNumbers(response);
+                        console.log('ok this', _this.foundTracking);
+                        chrome.browserAction.setIcon({
+                            path: _this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+                            tabId: tabs[0].id
+                        });
                     });
                 });
             }); });
@@ -254,9 +258,19 @@ var BackgroundComponent = /** @class */ (function () {
             console.log('i got message', request);
             switch (request.command) {
                 case 'getTracking':
-                    console.log('getTracking', _this.foundTracking);
-                    sendResponse(_this.foundTracking);
+                    sendResponse({ foundTracking: _this.foundTracking, storedTracking: _this.storedTracking });
                     break;
+                case 'saveTracking':
+                    storeTrackingNumber(request.data, _this.storedTracking, sendResponse);
+                    break;
+            }
+        });
+        chrome.storage.onChanged.addListener(function (changes, namespace) {
+            console.log('storage change', namespace, changes);
+            if (changes.tracking) {
+                console.log('sending message');
+                _this.storedTracking = changes.tracking.newValue;
+                chrome.runtime.sendMessage({ command: 'refresh', data: { foundTracking: _this.foundTracking, storedTracking: _this.storedTracking } });
             }
         });
     };
@@ -323,46 +337,89 @@ var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/c
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i1 = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm5/common.js");
 function ListComponent_p_2_Template(rf, ctx) { if (rf & 1) {
-    var _r3 = i0.ɵɵgetCurrentView();
+    var _r4 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementStart(0, "p");
     i0.ɵɵtext(1);
     i0.ɵɵelementStart(2, "a", 1);
-    i0.ɵɵlistener("click", function ListComponent_p_2_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r3); var tracking_r1 = ctx.$implicit; var ctx_r2 = i0.ɵɵnextContext(); return ctx_r2.add(tracking_r1); });
+    i0.ɵɵlistener("click", function ListComponent_p_2_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r4); var tracking_r2 = ctx.$implicit; var ctx_r3 = i0.ɵɵnextContext(); return ctx_r3.add(tracking_r2); });
     i0.ɵɵtext(3, "add");
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    var tracking_r1 = ctx.$implicit;
+    var tracking_r2 = ctx.$implicit;
     i0.ɵɵadvance(1);
-    i0.ɵɵtextInterpolate1("pl ", tracking_r1.courierCode, " ");
+    i0.ɵɵtextInterpolate1("pl ", tracking_r2.courierCode, " ");
+} }
+function ListComponent_p_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "p");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    var tracking_r5 = ctx.$implicit;
+    i0.ɵɵadvance(1);
+    i0.ɵɵtextInterpolate1("sto ", tracking_r5.courierCode, "");
 } }
 var ListComponent = /** @class */ (function () {
     function ListComponent(appRef) {
         this.appRef = appRef;
         this.foundTracking = [];
-        this.fooTest = [];
-        this.console = console;
+        this.storedTracking = [];
     }
     ListComponent.prototype.ngOnInit = function () {
+        this.refresh();
+        this.addListeners();
+    };
+    ListComponent.prototype.refresh = function () {
         var _this = this;
         chrome.runtime.sendMessage({ command: 'getTracking' }, function (response) {
-            chrome.extension.getBackgroundPage().console.log('RESPONSE', response);
-            _this.foundTracking = response;
+            _this.foundTracking = response.foundTracking;
+            _this.storedTracking = response.storedTracking;
             _this.appRef.tick();
         });
     };
     ListComponent.prototype.add = function (tracking) {
         chrome.extension.getBackgroundPage().console.log('i will add', tracking);
+        chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
+    };
+    ListComponent.prototype.addListeners = function () {
+        var _this = this;
+        chrome.runtime.onMessage.addListener(function (request) {
+            chrome.extension.getBackgroundPage().console.log('i got a message', request);
+            switch (request.command) {
+                case 'refresh':
+                    _this.bg('i got a refresh', request);
+                    _this.storedTracking = request.data.storedTracking;
+                    _this.foundTracking = request.data.foundTracking;
+                    _this.appRef.tick();
+                    break;
+            }
+        });
+    };
+    ListComponent.prototype.bg = function () {
+        var _a;
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        (_a = chrome.extension.getBackgroundPage().console).log.apply(_a, args);
     };
     ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef)); };
-    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 3, vars: 1, consts: [[4, "ngFor", "ngForOf"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
+    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 6, vars: 3, consts: [[4, "ngFor", "ngForOf"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
             i0.ɵɵelementStart(0, "h1");
             i0.ɵɵtext(1, "Hey7");
             i0.ɵɵelementEnd();
             i0.ɵɵtemplate(2, ListComponent_p_2_Template, 4, 1, "p", 0);
+            i0.ɵɵelementStart(3, "h2");
+            i0.ɵɵtext(4);
+            i0.ɵɵelementEnd();
+            i0.ɵɵtemplate(5, ListComponent_p_5_Template, 2, 1, "p", 0);
         } if (rf & 2) {
             i0.ɵɵadvance(2);
             i0.ɵɵproperty("ngForOf", ctx.foundTracking);
+            i0.ɵɵadvance(2);
+            i0.ɵɵtextInterpolate1("Stored (", ctx.storedTracking.length, ")");
+            i0.ɵɵadvance(1);
+            i0.ɵɵproperty("ngForOf", ctx.storedTracking);
         } }, directives: [i1.NgForOf], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
     return ListComponent;
 }());

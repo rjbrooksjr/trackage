@@ -1,2 +1,4 @@
 <h1>Hey7</h1>
 <p *ngFor="let tracking of foundTracking">pl {{tracking.courierCode}} <a (click)="add(tracking)">add</a></p>
+<h2>Stored ({{ storedTracking.length }})</h2>
+<p *ngFor="let tracking of storedTracking">sto {{tracking.courierCode}}</p>

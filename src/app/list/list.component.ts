@@ -9,20 +9,46 @@ import { StoredTrackingNumber } from '../common/types';
 })
 export class ListComponent implements OnInit {
   foundTracking: StoredTrackingNumber[] = [];
-  fooTest: string[] = [];
-  console = console;
+  storedTracking: StoredTrackingNumber[] = [];
 
   constructor(private appRef: ApplicationRef) { }
 
   ngOnInit(): void {
+    this.refresh();
+    this.addListeners();
+  }
+
+  refresh(): void {
     chrome.runtime.sendMessage({ command: 'getTracking' }, response => {
-      chrome.extension.getBackgroundPage().console.log('RESPONSE', response);
-      this.foundTracking = response;
+      this.foundTracking = response.foundTracking;
+      this.storedTracking = response.storedTracking;
       this.appRef.tick();
     });
   }
 
   add(tracking: StoredTrackingNumber): void {
     chrome.extension.getBackgroundPage().console.log('i will add', tracking);
+
+    chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
+  }
+
+  addListeners(): void {
+    chrome.runtime.onMessage.addListener(request => {
+      chrome.extension.getBackgroundPage().console.log('i got a message', request);
+
+      switch (request.command) {
+        case 'refresh':
+          this.bg('i got a refresh', request);
+
+          this.storedTracking = request.data.storedTracking;
+          this.foundTracking = request.data.foundTracking;
+          this.appRef.tick();
+          break;
+      }
+    });
+  }
+
+  bg(...args): void {
+    chrome.extension.getBackgroundPage().console.log(...args);
   }
 }

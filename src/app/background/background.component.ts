@@ -6,7 +6,10 @@ import { SharedDataService } from '../services/shared-data.service';
 
 const pendingTrackingNumbers: TrackingMatchResult[] = [];
 
-const saveTracking = tracking => chrome.storage.local.set({ tracking }, () => {});
+const saveTracking = (sendResponse) => (tracking) => {
+  console.log('ok saving', tracking);
+  chrome.storage.local.set({ tracking });
+};
 
 const refresh = x => identity;
 
@@ -14,11 +17,10 @@ const splitTrackingNumbers = (data: TrackingMatchResult[]): StoredTrackingNumber
   trackingNumber => ({ courierCode: row.courierCode, trackingNumber: trackingNumber.replace(/[^a-zA-Z\d]/g, '') })
 )).flat(Infinity);
 
-const storeTrackingNumber = (response: TrackingMatchResult[]) => ({ tracking }: TrackingStorage) => pipe(
-  splitTrackingNumbers,
+const storeTrackingNumber = (response: TrackingMatchResult[], storedTracking: StoredTrackingNumber[], sendResponse: () => void) => pipe(
   // @ts-ignore
-  unionWith(both(eqBy(prop('courierCode')), eqBy(prop('trackingNumber'))), tracking),
-  saveTracking,
+  unionWith(both(eqBy(prop('courierCode')), eqBy(prop('trackingNumber'))), storedTracking),
+  saveTracking(sendResponse),
 )(response);
 
 @Component({
@@ -28,11 +30,15 @@ const storeTrackingNumber = (response: TrackingMatchResult[]) => ({ tracking }: 
 })
 export class BackgroundComponent implements OnInit {
   foundTracking: StoredTrackingNumber[] = [];
+  storedTracking: StoredTrackingNumber[] = [];
+  port;
 
   constructor(private sharedDataService: SharedDataService) { }
 
   ngOnInit(): void {
     this.addListeners();
+
+    chrome.storage.local.get('tracking', ({ tracking }) => this.storedTracking = tracking);
   }
 
   addListeners(): void {
@@ -42,21 +48,17 @@ export class BackgroundComponent implements OnInit {
           console.log('response', response);
           console.log('got', splitTrackingNumbers(response));
 
-          // todo subttract anything in storage
-          const trackingNumbers = splitTrackingNumbers(response);
+          chrome.storage.local.get('tracking', stored => {
+            // todo subttract anything in storage
+            this.foundTracking = splitTrackingNumbers(response);
 
-          this.foundTracking = trackingNumbers;
+            console.log('ok this', this.foundTracking);
 
-          console.log('ok this', this.foundTracking, trackingNumbers);
+            chrome.browserAction.setIcon({
+              path: this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+              tabId: tabs[0].id,
+            });
 
-          // this.sharedDataService.setFoundTracking(trackingNumbers);
-          response && chrome.storage.local.get('tracking', storeTrackingNumber(response));
-
-          console.log('woah', response && response.length > 0, response, response.length);
-
-          chrome.browserAction.setIcon({
-            path: trackingNumbers.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
-            tabId: tabs[0].id,
           });
         })
       )
@@ -67,12 +69,21 @@ export class BackgroundComponent implements OnInit {
 
       switch (request.command) {
         case 'getTracking':
-          console.log('getTracking', this.foundTracking);
-          sendResponse(this.foundTracking);
+          sendResponse({ foundTracking: this.foundTracking, storedTracking: this.storedTracking });
           break;
         case 'saveTracking':
-          storeTrackingNumber(response.data);
+          storeTrackingNumber(request.data, this.storedTracking, sendResponse);
           break;
+      }
+    });
+
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      console.log('storage change', namespace, changes);
+
+      if (changes.tracking) {
+        console.log('sending message');
+        this.storedTracking = changes.tracking.newValue;
+        chrome.runtime.sendMessage({ command: 'refresh', data: { foundTracking: this.foundTracking, storedTracking: this.storedTracking }});
       }
     });
   }
