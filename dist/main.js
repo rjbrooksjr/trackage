@@ -212,7 +212,6 @@ var rxjs_1 = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js
 var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i1 = __webpack_require__(/*! ../services/shared-data.service */ "./src/app/services/shared-data.service.ts");
-var pendingTrackingNumbers = [];
 var saveTracking = function (sendResponse) { return function (tracking) {
     console.log('ok saving', tracking);
     chrome.storage.local.set({ tracking: tracking });
@@ -222,6 +221,7 @@ var splitTrackingNumbers = function (data) { return data.map(function (row) { re
 var storeTrackingNumber = function (response, storedTracking, sendResponse) { return rxjs_1.pipe(
 // @ts-ignore
 ramda_1.unionWith(ramda_1.both(ramda_1.eqBy(ramda_1.prop('courierCode')), ramda_1.eqBy(ramda_1.prop('trackingNumber'))), storedTracking), saveTracking(sendResponse))(response); };
+var compareTracking = function (x, y) { return x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber; };
 var BackgroundComponent = /** @class */ (function () {
     function BackgroundComponent(sharedDataService) {
         this.sharedDataService = sharedDataService;
@@ -245,7 +245,7 @@ var BackgroundComponent = /** @class */ (function () {
                     console.log('got', splitTrackingNumbers(response));
                     chrome.storage.local.get('tracking', function (stored) {
                         // todo subttract anything in storage
-                        _this.foundTracking = splitTrackingNumbers(response);
+                        _this.foundTracking = ramda_1.differenceWith(compareTracking, splitTrackingNumbers(response), _this.storedTracking);
                         console.log('ok this', _this.foundTracking);
                         chrome.browserAction.setIcon({
                             path: _this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
@@ -262,6 +262,9 @@ var BackgroundComponent = /** @class */ (function () {
                     break;
                 case 'saveTracking':
                     storeTrackingNumber(request.data, _this.storedTracking, sendResponse);
+                    break;
+                case 'removeTracking':
+                    chrome.storage.local.set({ tracking: ramda_1.differenceWith(compareTracking, _this.storedTracking, request.data) });
                     break;
             }
         });
@@ -335,7 +338,8 @@ exports.environment = {
 exports.__esModule = true;
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
-var i1 = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm5/common.js");
+var i1 = __webpack_require__(/*! ../services/log.service */ "./src/app/services/log.service.ts");
+var i2 = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm5/common.js");
 function ListComponent_p_2_Template(rf, ctx) { if (rf & 1) {
     var _r4 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementStart(0, "p");
@@ -351,17 +355,23 @@ function ListComponent_p_2_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵtextInterpolate1("pl ", tracking_r2.courierCode, " ");
 } }
 function ListComponent_p_5_Template(rf, ctx) { if (rf & 1) {
+    var _r7 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementStart(0, "p");
     i0.ɵɵtext(1);
+    i0.ɵɵelementStart(2, "a", 1);
+    i0.ɵɵlistener("click", function ListComponent_p_5_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r7); var tracking_r5 = ctx.$implicit; var ctx_r6 = i0.ɵɵnextContext(); return ctx_r6.remove(tracking_r5); });
+    i0.ɵɵtext(3, "add");
+    i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     var tracking_r5 = ctx.$implicit;
     i0.ɵɵadvance(1);
-    i0.ɵɵtextInterpolate1("sto ", tracking_r5.courierCode, "");
+    i0.ɵɵtextInterpolate1("sto ", tracking_r5.courierCode, " ");
 } }
 var ListComponent = /** @class */ (function () {
-    function ListComponent(appRef) {
+    function ListComponent(appRef, log) {
         this.appRef = appRef;
+        this.log = log;
         this.foundTracking = [];
         this.storedTracking = [];
     }
@@ -378,16 +388,19 @@ var ListComponent = /** @class */ (function () {
         });
     };
     ListComponent.prototype.add = function (tracking) {
-        chrome.extension.getBackgroundPage().console.log('i will add', tracking);
+        this.log.background('i will add', tracking);
         chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
+    };
+    ListComponent.prototype.remove = function (tracking) {
+        chrome.runtime.sendMessage({ command: 'removeTracking', data: [tracking] });
     };
     ListComponent.prototype.addListeners = function () {
         var _this = this;
         chrome.runtime.onMessage.addListener(function (request) {
-            chrome.extension.getBackgroundPage().console.log('i got a message', request);
+            _this.log.background('i got a message', request);
             switch (request.command) {
                 case 'refresh':
-                    _this.bg('i got a refresh', request);
+                    _this.log.background('i got a refresh', request);
                     _this.storedTracking = request.data.storedTracking;
                     _this.foundTracking = request.data.foundTracking;
                     _this.appRef.tick();
@@ -395,15 +408,7 @@ var ListComponent = /** @class */ (function () {
             }
         });
     };
-    ListComponent.prototype.bg = function () {
-        var _a;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        (_a = chrome.extension.getBackgroundPage().console).log.apply(_a, args);
-    };
-    ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef)); };
+    ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef), i0.ɵɵdirectiveInject(i1.LogService)); };
     ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 6, vars: 3, consts: [[4, "ngFor", "ngForOf"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
             i0.ɵɵelementStart(0, "h1");
             i0.ɵɵtext(1, "Hey7");
@@ -412,7 +417,7 @@ var ListComponent = /** @class */ (function () {
             i0.ɵɵelementStart(3, "h2");
             i0.ɵɵtext(4);
             i0.ɵɵelementEnd();
-            i0.ɵɵtemplate(5, ListComponent_p_5_Template, 2, 1, "p", 0);
+            i0.ɵɵtemplate(5, ListComponent_p_5_Template, 4, 1, "p", 0);
         } if (rf & 2) {
             i0.ɵɵadvance(2);
             i0.ɵɵproperty("ngForOf", ctx.foundTracking);
@@ -420,7 +425,7 @@ var ListComponent = /** @class */ (function () {
             i0.ɵɵtextInterpolate1("Stored (", ctx.storedTracking.length, ")");
             i0.ɵɵadvance(1);
             i0.ɵɵproperty("ngForOf", ctx.storedTracking);
-        } }, directives: [i1.NgForOf], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
+        } }, directives: [i2.NgForOf], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
     return ListComponent;
 }());
 exports.ListComponent = ListComponent;
@@ -431,7 +436,45 @@ exports.ListComponent = ListComponent;
                 templateUrl: './list.component.html',
                 styleUrls: ['./list.component.scss']
             }]
-    }], function () { return [{ type: i0.ApplicationRef }]; }, null); })();
+    }], function () { return [{ type: i0.ApplicationRef }, { type: i1.LogService }]; }, null); })();
+
+
+/***/ }),
+
+/***/ "./src/app/services/log.service.ts":
+/*!*****************************************!*\
+  !*** ./src/app/services/log.service.ts ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+exports.__esModule = true;
+var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
+var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
+var LogService = /** @class */ (function () {
+    function LogService() {
+    }
+    LogService.prototype.background = function () {
+        var _a;
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        (_a = chrome.extension.getBackgroundPage().console).log.apply(_a, args);
+    };
+    LogService.ɵfac = function LogService_Factory(t) { return new (t || LogService)(); };
+    LogService.ɵprov = i0.ɵɵdefineInjectable({ token: LogService, factory: LogService.ɵfac, providedIn: 'root' });
+    return LogService;
+}());
+exports.LogService = LogService;
+/*@__PURE__*/ (function () { i0.ɵsetClassMetadata(LogService, [{
+        type: core_1.Injectable,
+        args: [{
+                providedIn: 'root'
+            }]
+    }], function () { return []; }, null); })();
 
 
 /***/ }),

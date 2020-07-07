@@ -1,6 +1,6 @@
 import { Component, OnInit, ApplicationRef } from '@angular/core';
-import { SharedDataService } from '../services/shared-data.service';
 import { StoredTrackingNumber } from '../common/types';
+import { LogService } from '../services/log.service';
 
 @Component({
   selector: 'app-list',
@@ -11,7 +11,7 @@ export class ListComponent implements OnInit {
   foundTracking: StoredTrackingNumber[] = [];
   storedTracking: StoredTrackingNumber[] = [];
 
-  constructor(private appRef: ApplicationRef) { }
+  constructor(private appRef: ApplicationRef, private log: LogService) { }
 
   ngOnInit(): void {
     this.refresh();
@@ -27,18 +27,22 @@ export class ListComponent implements OnInit {
   }
 
   add(tracking: StoredTrackingNumber): void {
-    chrome.extension.getBackgroundPage().console.log('i will add', tracking);
+    this.log.background('i will add', tracking);
 
     chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
   }
 
+  remove(tracking: StoredTrackingNumber): void {
+    chrome.runtime.sendMessage({ command: 'removeTracking', data: [tracking] });
+  }
+
   addListeners(): void {
     chrome.runtime.onMessage.addListener(request => {
-      chrome.extension.getBackgroundPage().console.log('i got a message', request);
+      this.log.background('i got a message', request);
 
       switch (request.command) {
         case 'refresh':
-          this.bg('i got a refresh', request);
+          this.log.background('i got a refresh', request);
 
           this.storedTracking = request.data.storedTracking;
           this.foundTracking = request.data.foundTracking;
@@ -48,7 +52,5 @@ export class ListComponent implements OnInit {
     });
   }
 
-  bg(...args): void {
-    chrome.extension.getBackgroundPage().console.log(...args);
-  }
+
 }

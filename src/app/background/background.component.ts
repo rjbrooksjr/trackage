@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { TrackingMatchResult, StoredTrackingNumber, TrackingStorage } from '../common/types';
 import { identity, pipe } from 'rxjs';
-import { unionWith, both, eqBy, prop, split } from 'ramda';
+import { unionWith, both, eqBy, prop, split, whereEq, where, complement, equals, differenceWith } from 'ramda';
 import { SharedDataService } from '../services/shared-data.service';
-
-const pendingTrackingNumbers: TrackingMatchResult[] = [];
 
 const saveTracking = (sendResponse) => (tracking) => {
   console.log('ok saving', tracking);
@@ -23,6 +21,8 @@ const storeTrackingNumber = (response: TrackingMatchResult[], storedTracking: St
   saveTracking(sendResponse),
 )(response);
 
+const compareTracking = (x, y) => x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber;
+
 @Component({
   selector: 'app-background',
   templateUrl: './background.component.html',
@@ -31,7 +31,6 @@ const storeTrackingNumber = (response: TrackingMatchResult[], storedTracking: St
 export class BackgroundComponent implements OnInit {
   foundTracking: StoredTrackingNumber[] = [];
   storedTracking: StoredTrackingNumber[] = [];
-  port;
 
   constructor(private sharedDataService: SharedDataService) { }
 
@@ -49,10 +48,7 @@ export class BackgroundComponent implements OnInit {
           console.log('got', splitTrackingNumbers(response));
 
           chrome.storage.local.get('tracking', stored => {
-            // todo subttract anything in storage
-            this.foundTracking = splitTrackingNumbers(response);
-
-            console.log('ok this', this.foundTracking);
+            this.foundTracking = differenceWith(compareTracking, splitTrackingNumbers(response), this.storedTracking);
 
             chrome.browserAction.setIcon({
               path: this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
@@ -73,6 +69,9 @@ export class BackgroundComponent implements OnInit {
           break;
         case 'saveTracking':
           storeTrackingNumber(request.data, this.storedTracking, sendResponse);
+          break;
+        case 'removeTracking':
+          chrome.storage.local.set({ tracking: differenceWith(compareTracking, this.storedTracking, request.data) });
           break;
       }
     });
