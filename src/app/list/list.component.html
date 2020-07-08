@@ -1,4 +1,29 @@
 <h1>Hey8</h1>
-<p *ngFor="let tracking of foundTracking">pl {{tracking.trackingNumer}} <a (click)="add(tracking)">add</a></p>
-<h2>Stored ({{ storedTracking.length }})</h2>
-<p *ngFor="let tracking of storedTracking">sto {{tracking.courierCode}} <a (click)="remove(tracking)">remove</a></p>
+<div class="container">
+  <div class="columns">
+    <div class="column">
+      First column
+    </div>
+    <div class="column">
+      Second column
+    </div>
+    <div class="column">
+      Third column
+    </div>
+    <div class="column">
+      Fourth column
+    </div>
+  </div>
+  <div *ngFor="let tracking of foundTracking" class="columns">
+    <div class="column"><p class="is-size-7">{{ tracking.trackingNumber }}</p></div>
+    <div class="column">
+      <button (click)="add(tracking)" class="button is-small">
+        <span class="icon is-small">
+          <i class="fas fa-plus"></i>
+        </span>
+      </button>
+    </div>
+  </div>
+  <h2>Stored ({{ storedTracking.length }})</h2>
+  <p *ngFor="let tracking of storedTracking">{{ tracking.courierCode }} <a (click)="remove(tracking)">remove</a></p>
+</div>

@@ -124,9 +124,11 @@ var AppComponent = /** @class */ (function () {
         this.title = 'app';
     }
     AppComponent.ɵfac = function AppComponent_Factory(t) { return new (t || AppComponent)(); };
-    AppComponent.ɵcmp = i0.ɵɵdefineComponent({ type: AppComponent, selectors: [["app-root"]], decls: 1, vars: 0, template: function AppComponent_Template(rf, ctx) { if (rf & 1) {
-            i0.ɵɵelement(0, "router-outlet");
-        } }, directives: [i1.RouterOutlet], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2FwcC5jb21wb25lbnQuc2NzcyJ9 */"] });
+    AppComponent.ɵcmp = i0.ɵɵdefineComponent({ type: AppComponent, selectors: [["app-root"]], decls: 2, vars: 0, consts: [["id", "main", 1, "section"]], template: function AppComponent_Template(rf, ctx) { if (rf & 1) {
+            i0.ɵɵelementStart(0, "div", 0);
+            i0.ɵɵelement(1, "router-outlet");
+            i0.ɵɵelementEnd();
+        } }, directives: [i1.RouterOutlet], styles: ["div#main[_ngcontent-%COMP%] {\n  width: 600px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL3JpY2gvY29kZS9wdC9zcmMvYXBwL2FwcC5jb21wb25lbnQuc2NzcyIsInNyYy9hcHAvYXBwLmNvbXBvbmVudC5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsWUFBQTtBQ0NGIiwiZmlsZSI6InNyYy9hcHAvYXBwLmNvbXBvbmVudC5zY3NzIiwic291cmNlc0NvbnRlbnQiOlsiZGl2I21haW4ge1xuICB3aWR0aDogNjAwcHg7XG59IiwiZGl2I21haW4ge1xuICB3aWR0aDogNjAwcHg7XG59Il19 */"] });
     return AppComponent;
 }());
 exports.AppComponent = AppComponent;
@@ -338,33 +340,41 @@ var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/c
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i1 = __webpack_require__(/*! ../services/log.service */ "./src/app/services/log.service.ts");
 var i2 = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm5/common.js");
-function ListComponent_p_2_Template(rf, ctx) { if (rf & 1) {
+function ListComponent_div_12_Template(rf, ctx) { if (rf & 1) {
     var _r4 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "p");
-    i0.ɵɵtext(1);
-    i0.ɵɵelementStart(2, "a", 1);
-    i0.ɵɵlistener("click", function ListComponent_p_2_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r4); var tracking_r2 = ctx.$implicit; var ctx_r3 = i0.ɵɵnextContext(); return ctx_r3.add(tracking_r2); });
-    i0.ɵɵtext(3, "add");
+    i0.ɵɵelementStart(0, "div", 1);
+    i0.ɵɵelementStart(1, "div", 2);
+    i0.ɵɵelementStart(2, "p", 5);
+    i0.ɵɵtext(3);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(4, "div", 2);
+    i0.ɵɵelementStart(5, "button", 6);
+    i0.ɵɵlistener("click", function ListComponent_div_12_Template_button_click_5_listener() { i0.ɵɵrestoreView(_r4); var tracking_r2 = ctx.$implicit; var ctx_r3 = i0.ɵɵnextContext(); return ctx_r3.add(tracking_r2); });
+    i0.ɵɵelementStart(6, "span", 7);
+    i0.ɵɵelement(7, "i", 8);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     var tracking_r2 = ctx.$implicit;
-    i0.ɵɵadvance(1);
-    i0.ɵɵtextInterpolate1("pl ", tracking_r2.trackingNumer, " ");
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate(tracking_r2.trackingNumber);
 } }
-function ListComponent_p_5_Template(rf, ctx) { if (rf & 1) {
+function ListComponent_p_15_Template(rf, ctx) { if (rf & 1) {
     var _r7 = i0.ɵɵgetCurrentView();
     i0.ɵɵelementStart(0, "p");
     i0.ɵɵtext(1);
-    i0.ɵɵelementStart(2, "a", 1);
-    i0.ɵɵlistener("click", function ListComponent_p_5_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r7); var tracking_r5 = ctx.$implicit; var ctx_r6 = i0.ɵɵnextContext(); return ctx_r6.remove(tracking_r5); });
+    i0.ɵɵelementStart(2, "a", 9);
+    i0.ɵɵlistener("click", function ListComponent_p_15_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r7); var tracking_r5 = ctx.$implicit; var ctx_r6 = i0.ɵɵnextContext(); return ctx_r6.remove(tracking_r5); });
     i0.ɵɵtext(3, "remove");
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     var tracking_r5 = ctx.$implicit;
     i0.ɵɵadvance(1);
-    i0.ɵɵtextInterpolate1("sto ", tracking_r5.courierCode, " ");
+    i0.ɵɵtextInterpolate1("", tracking_r5.courierCode, " ");
 } }
 var ListComponent = /** @class */ (function () {
     function ListComponent(appRef, log) {
@@ -407,17 +417,33 @@ var ListComponent = /** @class */ (function () {
         });
     };
     ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef), i0.ɵɵdirectiveInject(i1.LogService)); };
-    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 6, vars: 3, consts: [[4, "ngFor", "ngForOf"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
+    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 16, vars: 3, consts: [[1, "container"], [1, "columns"], [1, "column"], ["class", "columns", 4, "ngFor", "ngForOf"], [4, "ngFor", "ngForOf"], [1, "is-size-7"], [1, "button", "is-small", 3, "click"], [1, "icon", "is-small"], [1, "fas", "fa-plus"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
             i0.ɵɵelementStart(0, "h1");
             i0.ɵɵtext(1, "Hey8");
             i0.ɵɵelementEnd();
-            i0.ɵɵtemplate(2, ListComponent_p_2_Template, 4, 1, "p", 0);
-            i0.ɵɵelementStart(3, "h2");
-            i0.ɵɵtext(4);
+            i0.ɵɵelementStart(2, "div", 0);
+            i0.ɵɵelementStart(3, "div", 1);
+            i0.ɵɵelementStart(4, "div", 2);
+            i0.ɵɵtext(5, " First column ");
             i0.ɵɵelementEnd();
-            i0.ɵɵtemplate(5, ListComponent_p_5_Template, 4, 1, "p", 0);
+            i0.ɵɵelementStart(6, "div", 2);
+            i0.ɵɵtext(7, " Second column ");
+            i0.ɵɵelementEnd();
+            i0.ɵɵelementStart(8, "div", 2);
+            i0.ɵɵtext(9, " Third column ");
+            i0.ɵɵelementEnd();
+            i0.ɵɵelementStart(10, "div", 2);
+            i0.ɵɵtext(11, " Fourth column ");
+            i0.ɵɵelementEnd();
+            i0.ɵɵelementEnd();
+            i0.ɵɵtemplate(12, ListComponent_div_12_Template, 8, 1, "div", 3);
+            i0.ɵɵelementStart(13, "h2");
+            i0.ɵɵtext(14);
+            i0.ɵɵelementEnd();
+            i0.ɵɵtemplate(15, ListComponent_p_15_Template, 4, 1, "p", 4);
+            i0.ɵɵelementEnd();
         } if (rf & 2) {
-            i0.ɵɵadvance(2);
+            i0.ɵɵadvance(12);
             i0.ɵɵproperty("ngForOf", ctx.foundTracking);
             i0.ɵɵadvance(2);
             i0.ɵɵtextInterpolate1("Stored (", ctx.storedTracking.length, ")");
