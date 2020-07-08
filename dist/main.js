@@ -244,9 +244,7 @@ var BackgroundComponent = /** @class */ (function () {
                     console.log('response', response);
                     console.log('got', splitTrackingNumbers(response));
                     chrome.storage.local.get('tracking', function (stored) {
-                        // todo subttract anything in storage
                         _this.foundTracking = ramda_1.differenceWith(compareTracking, splitTrackingNumbers(response), _this.storedTracking);
-                        console.log('ok this', _this.foundTracking);
                         chrome.browserAction.setIcon({
                             path: _this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
                             tabId: tabs[0].id
@@ -352,7 +350,7 @@ function ListComponent_p_2_Template(rf, ctx) { if (rf & 1) {
 } if (rf & 2) {
     var tracking_r2 = ctx.$implicit;
     i0.ɵɵadvance(1);
-    i0.ɵɵtextInterpolate1("pl ", tracking_r2.courierCode, " ");
+    i0.ɵɵtextInterpolate1("pl ", tracking_r2.trackingNumer, " ");
 } }
 function ListComponent_p_5_Template(rf, ctx) { if (rf & 1) {
     var _r7 = i0.ɵɵgetCurrentView();
@@ -360,7 +358,7 @@ function ListComponent_p_5_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵtext(1);
     i0.ɵɵelementStart(2, "a", 1);
     i0.ɵɵlistener("click", function ListComponent_p_5_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r7); var tracking_r5 = ctx.$implicit; var ctx_r6 = i0.ɵɵnextContext(); return ctx_r6.remove(tracking_r5); });
-    i0.ɵɵtext(3, "add");
+    i0.ɵɵtext(3, "remove");
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
@@ -411,7 +409,7 @@ var ListComponent = /** @class */ (function () {
     ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef), i0.ɵɵdirectiveInject(i1.LogService)); };
     ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 6, vars: 3, consts: [[4, "ngFor", "ngForOf"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
             i0.ɵɵelementStart(0, "h1");
-            i0.ɵɵtext(1, "Hey7");
+            i0.ɵɵtext(1, "Hey8");
             i0.ɵɵelementEnd();
             i0.ɵɵtemplate(2, ListComponent_p_2_Template, 4, 1, "p", 0);
             i0.ɵɵelementStart(3, "h2");

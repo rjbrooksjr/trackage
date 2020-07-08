@@ -8,6 +8,8 @@ var gulp = require('gulp');
   var watch = require('gulp-watch');
   var livereload = require('gulp-livereload');
   var sourcemaps = require('gulp-sourcemaps');
+  var plumber = require('gulp-plumber');
+  var connect = require('gulp-connect');
 
   var tsify = require("tsify");
   gulp.task('ng-build', function(cb) {
@@ -15,10 +17,11 @@ var gulp = require('gulp');
       exec('ng build', function (err, stdout, stderr) {
           console.log(stdout);
           console.log(stderr);
-          cb(err);
+          cb();
           return true;
       });
   });
+
   gulp.task('content-script', function() {
       return browserify({
               basedir: '.',
@@ -28,11 +31,20 @@ var gulp = require('gulp');
           .plugin(tsify)
           .bundle()
           .pipe(source('content-script.js'))
+          .pipe(plumber())
           .pipe(buffer())
           .pipe(sourcemaps.init({loadMaps: true}))
           .pipe(uglify())
           .pipe(sourcemaps.write('./'))
-          .pipe(gulp.dest('./dist'));
+          .pipe(gulp.dest('./dist'))
+          .pipe(connect.reload());
+  });
+
+  gulp.task('connect', function() {
+    connect.server({
+      root: 'app',
+      livereload: true
+    });
   });
 
   gulp.task('watch', () => {
