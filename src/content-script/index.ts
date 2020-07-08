@@ -1,7 +1,7 @@
-import { pipe, prop, flip, match, uniq, map, trim, applySpec, tap, filter, flatten, join, defaultTo } from "ramda";
+import { pipe, prop, flip, match, uniq, map, trim, applySpec, filter, flatten, join } from 'ramda';
 import { TrackingData, SerialData, Carrier, TrackingMatchResult } from '../app/common/types';
 import * as usps from '../../tracking_number_data/couriers/usps.json';
-import { mod10, dummy, getSerialData } from "../app/common/util";
+import { mod10, dummy, getSerialData } from '../app/common/util';
 
 const carriers = [usps];
 
@@ -10,7 +10,7 @@ const getList = (trackingNumber: TrackingData): string[] => pipe(
   join(''),
   (r: string) => new RegExp(r, 'g'),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  flip(match)(document.body.innerHTML.replace(/(<([^>]+)>)/ig,"")) as any,
+  flip(match)(document.body.innerHTML.replace(/(<([^>]+)>)/ig,'')) as any,
   uniq,
   map(trim),
 )(trackingNumber);

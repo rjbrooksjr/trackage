@@ -4,5 +4,13 @@
     "lib": ["es2019", "dom"],
     "resolveJsonModule": true,
     "target": "es5"
-  }
+  },
+  "include": [
+    "src/content-script",
+    "src/app",
+    "src/*.ts",
+    "src/manifest.json",
+    "src/styles.scss",
+    "src/index.html"
+  ]
 }
