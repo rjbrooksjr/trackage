@@ -5,8 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class LogService {
 
-  constructor() { }
-
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   background(...args): void {
     chrome.extension.getBackgroundPage().console.log(...args);
   }

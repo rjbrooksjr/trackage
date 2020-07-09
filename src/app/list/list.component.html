@@ -1,21 +1,7 @@
-<h1>Hey8</h1>
+<h1>Hey9</h1>
 <div class="container">
-  <div class="columns">
-    <div class="column">
-      First column
-    </div>
-    <div class="column">
-      Second column
-    </div>
-    <div class="column">
-      Third column
-    </div>
-    <div class="column">
-      Fourth column
-    </div>
-  </div>
-  <div *ngFor="let tracking of foundTracking" class="columns">
-    <div class="column"><p class="is-size-7">{{ tracking.trackingNumber }}</p></div>
+  <div *ngFor="let tracking of foundTracking" class="columns is-mobile">
+    <div class="column"><p>{{ tracking.trackingNumber }}</p></div>
     <div class="column">
       <button (click)="add(tracking)" class="button is-small">
         <span class="icon is-small">

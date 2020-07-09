@@ -22,9 +22,12 @@ module.exports = {
     extraFileExtensions: [".scss", ".html"]
   },
   rules: {
+    '@typescript-eslint/ban-ts-comment': 0,
+    camelcase: ["error", {properties: "never"}],
     'comma-style': ['error', 'last'],
     'eol-last': ['error', 'always'],
     'max-len': ['error', { code: 120, tabWidth: 2 }],
+    'no-explicit-any': 0,
     quotes: ['error', 'single'],
     semi: ['error', 'always'],
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

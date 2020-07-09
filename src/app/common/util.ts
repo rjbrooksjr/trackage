@@ -1,7 +1,7 @@
 import { complement, pipe, split, map, pickBy, values, sum, reverse } from 'ramda';
 import { TrackingData, SerialData, SerialNumberFormat } from './types';
 
-const toObj = (list): Record<string, number> => Object.assign({}, list);
+const toObj = (list) => Object.assign({}, list) as Record<string, number>;
 
 const evenKeys = (_v, k): boolean => k % 2 === 0;
 
@@ -39,11 +39,13 @@ const matchTrackingData = (trackingNumber: string, regex: string[]): Partial<Ser
 
 export const getSerialData = (
   trackingNumber: string,
+  // eslint-disable-next-line camelcase
   { regex, validation: { serial_number_format, checksum }}: TrackingData
 ): SerialData => {
   const trackingData = matchTrackingData(trackingNumber, regex);
 
   return {
+    // eslint-disable-next-line camelcase
     serial: serial_number_format
       ? formatSerial(trackingData.serial, serial_number_format)
       : trackingData.serial,
@@ -52,4 +54,5 @@ export const getSerialData = (
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unsafe-return
 export const log = (t, x) => (console.log(t, x), x);

@@ -30,6 +30,8 @@ const getTrackingNumbers = (carrier: Carrier): TrackingMatchResult => applySpec(
 
 chrome.runtime.onMessage.addListener((_request, _sender, sendResponse) => {
 
+  console.log('sending', carriers.map(getTrackingNumbers) || []);
+
   sendResponse(carriers.map(getTrackingNumbers) || []);
 
 });

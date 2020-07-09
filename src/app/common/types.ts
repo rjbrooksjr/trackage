@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 export type SerialNumberFormat = {
   prepend_if: {
     matches_regex: string;
@@ -49,3 +51,14 @@ export type StoredTrackingNumber = {
 export type TrackingStorage = {
   tracking: StoredTrackingNumber[];
 };
+
+export type TrackingResponse = {
+  foundTracking: StoredTrackingNumber[];
+  storedTracking: StoredTrackingNumber[];
+}
+
+export type Message = {
+  command: string;
+  data: TrackingResponse;
+};
+

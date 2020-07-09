@@ -1,5 +1,5 @@
 import { Component, OnInit, ApplicationRef } from '@angular/core';
-import { StoredTrackingNumber } from '../common/types';
+import { StoredTrackingNumber, Message, TrackingResponse } from '../common/types';
 import { LogService } from '../services/log.service';
 
 @Component({
@@ -19,7 +19,7 @@ export class ListComponent implements OnInit {
   }
 
   refresh(): void {
-    chrome.runtime.sendMessage({ command: 'getTracking' }, response => {
+    chrome.runtime.sendMessage({ command: 'getTracking' }, (response: TrackingResponse) => {
       this.foundTracking = response.foundTracking;
       this.storedTracking = response.storedTracking;
       this.appRef.tick();
@@ -37,13 +37,10 @@ export class ListComponent implements OnInit {
   }
 
   addListeners(): void {
-    chrome.runtime.onMessage.addListener(request => {
-      this.log.background('i got a message', request);
+    chrome.runtime.onMessage.addListener((request: Message) => {
 
       switch (request.command) {
         case 'refresh':
-          this.log.background('i got a refresh', request);
-
           this.storedTracking = request.data.storedTracking;
           this.foundTracking = request.data.foundTracking;
           this.appRef.tick();
