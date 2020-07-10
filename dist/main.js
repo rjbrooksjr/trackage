@@ -209,7 +209,6 @@ var BackgroundComponent = /** @class */ (function () {
                 });
             }); });
         chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-            console.log('i got message', request);
             switch (request.command) {
                 case 'getTracking':
                     sendResponse({ foundTracking: _this.foundTracking, storedTracking: _this.storedTracking });
@@ -218,7 +217,9 @@ var BackgroundComponent = /** @class */ (function () {
                     storeTrackingNumber(request.data, _this.storedTracking);
                     break;
                 case 'removeTracking':
-                    chrome.storage.local.set({ tracking: ramda_1.differenceWith(compareTracking, _this.storedTracking, request.data) });
+                    chrome.storage.local.set({
+                        tracking: ramda_1.differenceWith(compareTracking, _this.storedTracking, request.data)
+                    });
                     break;
             }
         });
@@ -227,7 +228,10 @@ var BackgroundComponent = /** @class */ (function () {
             if (changes.tracking) {
                 console.log('sending message');
                 _this.storedTracking = changes.tracking.newValue;
-                chrome.runtime.sendMessage({ command: 'refresh', data: { foundTracking: _this.foundTracking, storedTracking: _this.storedTracking } });
+                chrome.runtime.sendMessage({
+                    command: 'refresh',
+                    data: { foundTracking: _this.foundTracking, storedTracking: _this.storedTracking }
+                });
             }
         });
     };
@@ -359,10 +363,8 @@ var ListComponent = /** @class */ (function () {
     ListComponent.prototype.addListeners = function () {
         var _this = this;
         chrome.runtime.onMessage.addListener(function (request) {
-            _this.log.background('i got a message', request);
             switch (request.command) {
                 case 'refresh':
-                    _this.log.background('i got a refresh', request);
                     _this.storedTracking = request.data.storedTracking;
                     _this.foundTracking = request.data.foundTracking;
                     _this.appRef.tick();
@@ -420,6 +422,7 @@ var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/
 var LogService = /** @class */ (function () {
     function LogService() {
     }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     LogService.prototype.background = function () {
         var _a;
         var args = [];
@@ -438,7 +441,7 @@ exports.LogService = LogService;
         args: [{
                 providedIn: 'root'
             }]
-    }], function () { return []; }, null); })();
+    }], null, null); })();
 
 
 /***/ }),

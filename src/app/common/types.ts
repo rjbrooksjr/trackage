@@ -59,6 +59,6 @@ export type TrackingResponse = {
 
 export type Message = {
   command: string;
-  data: TrackingResponse;
+  data: TrackingResponse | TrackingMatchResult[] | StoredTrackingNumber[] | StoredTrackingNumber;
 };
 

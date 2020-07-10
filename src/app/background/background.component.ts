@@ -57,17 +57,17 @@ export class BackgroundComponent implements OnInit {
     );
 
     chrome.runtime.onMessage.addListener((request: Message, sender, sendResponse) => {
-      console.log('i got message', request);
-
       switch (request.command) {
         case 'getTracking':
           sendResponse({ foundTracking: this.foundTracking, storedTracking: this.storedTracking });
           break;
         case 'saveTracking':
-          storeTrackingNumber(request.data, this.storedTracking);
+          storeTrackingNumber(request.data as TrackingMatchResult[], this.storedTracking);
           break;
         case 'removeTracking':
-          chrome.storage.local.set({ tracking: differenceWith(compareTracking, this.storedTracking, request.data) });
+          chrome.storage.local.set({
+            tracking: differenceWith(compareTracking, this.storedTracking, request.data as StoredTrackingNumber[])
+          });
           break;
       }
     });

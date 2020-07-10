@@ -41,8 +41,8 @@ export class ListComponent implements OnInit {
 
       switch (request.command) {
         case 'refresh':
-          this.storedTracking = request.data.storedTracking;
-          this.foundTracking = request.data.foundTracking;
+          this.storedTracking = (request.data as TrackingResponse).storedTracking;
+          this.foundTracking = (request.data as TrackingResponse).foundTracking;
           this.appRef.tick();
           break;
       }
