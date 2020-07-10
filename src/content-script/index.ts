@@ -1,4 +1,4 @@
-import { pipe, prop, flip, match, uniq, map, trim, applySpec, filter, flatten, join, any, test, none } from 'ramda';
+import { pipe, prop, flip, match, uniq, map, trim, applySpec, filter, flatten, join, test, none } from 'ramda';
 import { TrackingData, SerialData, Carrier, TrackingMatchResult } from '../app/common/types';
 import * as usps from '../../tracking_number_data/couriers/usps.json';
 import { mod10, dummy, getSerialData } from '../app/common/util';
