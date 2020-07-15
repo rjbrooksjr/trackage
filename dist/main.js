@@ -198,7 +198,7 @@ var BackgroundComponent = /** @class */ (function () {
                 return tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, function (response) {
                     chrome.storage.local.get('tracking', function (_a) {
                         var tracking = _a.tracking;
-                        _this.storedTracking = tracking;
+                        _this.storedTracking = tracking || [];
                         // todo move this filtering to view
                         _this.foundTracking = ramda_1.differenceWith(compareTracking, splitTrackingNumbers(response), _this.storedTracking);
                         chrome.browserAction.setIcon({

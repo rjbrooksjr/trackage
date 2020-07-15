@@ -41,7 +41,7 @@ export class BackgroundComponent implements OnInit {
         tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, (response: TrackingMatchResult[]) => {
 
           chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
-            this.storedTracking = tracking;
+            this.storedTracking = tracking || [];
 
             // todo move this filtering to view
             this.foundTracking = differenceWith(compareTracking, splitTrackingNumbers(response), this.storedTracking);
