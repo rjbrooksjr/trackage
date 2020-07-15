@@ -83,11 +83,9 @@ var AppComponent = /** @class */ (function () {
         this.title = 'app';
     }
     AppComponent.ɵfac = function AppComponent_Factory(t) { return new (t || AppComponent)(); };
-    AppComponent.ɵcmp = i0.ɵɵdefineComponent({ type: AppComponent, selectors: [["app-root"]], decls: 2, vars: 0, consts: [["id", "main", 1, "section"]], template: function AppComponent_Template(rf, ctx) { if (rf & 1) {
-            i0.ɵɵelementStart(0, "div", 0);
-            i0.ɵɵelement(1, "router-outlet");
-            i0.ɵɵelementEnd();
-        } }, directives: [i1.RouterOutlet], styles: ["div#main[_ngcontent-%COMP%] {\n  width: 300px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL3JpY2gvY29kZS9wdC9zcmMvYXBwL2FwcC5jb21wb25lbnQuc2NzcyIsInNyYy9hcHAvYXBwLmNvbXBvbmVudC5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsWUFBWTtBQ0NkIiwiZmlsZSI6InNyYy9hcHAvYXBwLmNvbXBvbmVudC5zY3NzIiwic291cmNlc0NvbnRlbnQiOlsiZGl2I21haW4ge1xuICB3aWR0aDogMzAwcHg7XG59IiwiZGl2I21haW4ge1xuICB3aWR0aDogMzAwcHg7XG59XG4iXX0= */"] });
+    AppComponent.ɵcmp = i0.ɵɵdefineComponent({ type: AppComponent, selectors: [["app-root"]], decls: 1, vars: 0, template: function AppComponent_Template(rf, ctx) { if (rf & 1) {
+            i0.ɵɵelement(0, "router-outlet");
+        } }, directives: [i1.RouterOutlet], styles: ["body[_ngcontent-%COMP%] {\n  width: 300px;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9ob21lL3JpY2gvY29kZS9wdC9zcmMvYXBwL2FwcC5jb21wb25lbnQuc2NzcyIsInNyYy9hcHAvYXBwLmNvbXBvbmVudC5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0UsWUFBWTtBQ0NkIiwiZmlsZSI6InNyYy9hcHAvYXBwLmNvbXBvbmVudC5zY3NzIiwic291cmNlc0NvbnRlbnQiOlsiYm9keSB7XG4gIHdpZHRoOiAzMDBweDtcbn0iLCJib2R5IHtcbiAgd2lkdGg6IDMwMHB4O1xufVxuIl19 */"] });
     return AppComponent;
 }());
 exports.AppComponent = AppComponent;
@@ -119,7 +117,6 @@ var app_routing_module_1 = __webpack_require__(/*! ./app-routing.module */ "./sr
 var app_component_1 = __webpack_require__(/*! ./app.component */ "./src/app/app.component.ts");
 var list_component_1 = __webpack_require__(/*! ./list/list.component */ "./src/app/list/list.component.ts");
 var background_component_1 = __webpack_require__(/*! ./background/background.component */ "./src/app/background/background.component.ts");
-var found_tracking_pipe_1 = __webpack_require__(/*! ./pipes/found-tracking.pipe */ "./src/app/pipes/found-tracking.pipe.ts");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var AppModule = /** @class */ (function () {
     function AppModule() {
@@ -134,8 +131,7 @@ var AppModule = /** @class */ (function () {
 exports.AppModule = AppModule;
 (function () { (typeof ngJitMode === "undefined" || ngJitMode) && i0.ɵɵsetNgModuleScope(AppModule, { declarations: [app_component_1.AppComponent,
         list_component_1.ListComponent,
-        background_component_1.BackgroundComponent,
-        found_tracking_pipe_1.FoundTrackingPipe], imports: [platform_browser_1.BrowserModule,
+        background_component_1.BackgroundComponent], imports: [platform_browser_1.BrowserModule,
         app_routing_module_1.AppRoutingModule] }); })();
 /*@__PURE__*/ (function () { i0.ɵsetClassMetadata(AppModule, [{
         type: core_1.NgModule,
@@ -144,7 +140,6 @@ exports.AppModule = AppModule;
                     app_component_1.AppComponent,
                     list_component_1.ListComponent,
                     background_component_1.BackgroundComponent,
-                    found_tracking_pipe_1.FoundTrackingPipe
                 ],
                 imports: [
                     platform_browser_1.BrowserModule,
@@ -171,7 +166,13 @@ exports.__esModule = true;
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
-var saveTracking = function (tracking) { return chrome.storage.local.set({ tracking: tracking }); };
+var foundTracking = [];
+var storedTracking = [];
+var refreshPopup = function () { return chrome.runtime.sendMessage({
+    command: 'refresh',
+    data: getTracking()
+}); };
+var saveTracking = function (tracking) { return chrome.storage.local.set({ tracking: tracking }, refreshPopup); };
 var splitTrackingNumbers = function (data) {
     return data.map(function (row) { return row.trackingNumbers.map(function (trackingNumber) { return ({ courierCode: row.courierCode, trackingNumber: trackingNumber.replace(/[^a-zA-Z\d]/g, '') }); }); }).flat(Infinity);
 };
@@ -181,60 +182,60 @@ ramda_1.unionWith(ramda_1.both(ramda_1.eqBy(ramda_1.prop('courierCode')), ramda_
 var compareTracking = function (x, y) {
     return x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber;
 };
+var getTracking = function () { return ({
+    foundTracking: ramda_1.differenceWith(compareTracking, foundTracking, storedTracking),
+    storedTracking: storedTracking
+}); };
+var checkTab = function (tabId) { return chrome.tabs.sendMessage(tabId, {}, function (response) {
+    foundTracking = [];
+    chrome.storage.local.get('tracking', function (_a) {
+        var tracking = _a.tracking;
+        storedTracking = tracking || [];
+        foundTracking = response ? splitTrackingNumbers(response) : [];
+        chrome.browserAction.setIcon({
+            path: foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+            tabId: tabId
+        });
+    });
+}); };
 var BackgroundComponent = /** @class */ (function () {
     function BackgroundComponent() {
-        this.foundTracking = [];
-        this.storedTracking = [];
     }
     BackgroundComponent.prototype.ngOnInit = function () {
-        var _this = this;
         this.addListeners();
         chrome.storage.local.get('tracking', function (_a) {
             var tracking = _a.tracking;
-            return _this.storedTracking = tracking || [];
+            return storedTracking = tracking || [];
         });
     };
     BackgroundComponent.prototype.addListeners = function () {
-        var _this = this;
-        chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) { return changeInfo.status === 'complete' && tab.active &&
+        chrome.tabs.onUpdated.addListener(function (_tabId, changeInfo, tab) { return changeInfo.status === 'complete' && tab.active &&
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                return tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, function (response) {
-                    chrome.storage.local.get('tracking', function (_a) {
-                        var tracking = _a.tracking;
-                        _this.storedTracking = tracking || [];
-                        // todo move this filtering to view
-                        _this.foundTracking = ramda_1.differenceWith(compareTracking, splitTrackingNumbers(response), _this.storedTracking);
-                        chrome.browserAction.setIcon({
-                            path: _this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
-                            tabId: tabs[0].id
-                        });
-                    });
-                });
+                return tabs[0] && checkTab(tabs[0].id);
             }); });
+        chrome.tabs.onActivated.addListener(function (_a) {
+            var tabId = _a.tabId;
+            return checkTab(tabId);
+        });
         chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             switch (request.command) {
                 case 'getTracking':
-                    sendResponse({ foundTracking: _this.foundTracking, storedTracking: _this.storedTracking });
+                    sendResponse(getTracking());
                     break;
                 case 'saveTracking':
-                    storeTrackingNumber(request.data, _this.storedTracking);
+                    storeTrackingNumber(request.data, storedTracking);
                     break;
                 case 'removeTracking':
                     chrome.storage.local.set({
-                        tracking: ramda_1.differenceWith(compareTracking, _this.storedTracking, request.data)
+                        tracking: ramda_1.differenceWith(compareTracking, storedTracking, request.data)
                     });
                     break;
             }
         });
-        chrome.storage.onChanged.addListener(function (changes, namespace) {
-            console.log('storage change', namespace, changes);
+        chrome.storage.onChanged.addListener(function (changes) {
             if (changes.tracking) {
-                console.log('sending message');
-                _this.storedTracking = changes.tracking.newValue;
-                chrome.runtime.sendMessage({
-                    command: 'refresh',
-                    data: { foundTracking: _this.foundTracking, storedTracking: _this.storedTracking }
-                });
+                storedTracking = changes.tracking.newValue;
+                refreshPopup();
             }
         });
     };
@@ -301,41 +302,81 @@ var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/c
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i1 = __webpack_require__(/*! ../services/log.service */ "./src/app/services/log.service.ts");
 var i2 = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm5/common.js");
-function ListComponent_div_3_Template(rf, ctx) { if (rf & 1) {
-    var _r4 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 3);
-    i0.ɵɵelementStart(1, "div", 4);
-    i0.ɵɵelementStart(2, "p");
+function ListComponent_div_0_div_4_Template(rf, ctx) { if (rf & 1) {
+    var _r6 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 5);
+    i0.ɵɵelementStart(1, "div", 6);
+    i0.ɵɵelementStart(2, "p", 7);
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(4, "div", 4);
-    i0.ɵɵelementStart(5, "button", 5);
-    i0.ɵɵlistener("click", function ListComponent_div_3_Template_button_click_5_listener() { i0.ɵɵrestoreView(_r4); var tracking_r2 = ctx.$implicit; var ctx_r3 = i0.ɵɵnextContext(); return ctx_r3.add(tracking_r2); });
-    i0.ɵɵelementStart(6, "span", 6);
-    i0.ɵɵelement(7, "i", 7);
+    i0.ɵɵelement(4, "div", 6);
+    i0.ɵɵelementStart(5, "div", 6);
+    i0.ɵɵelementStart(6, "button", 8);
+    i0.ɵɵlistener("click", function ListComponent_div_0_div_4_Template_button_click_6_listener() { i0.ɵɵrestoreView(_r6); var tracking_r4 = ctx.$implicit; var ctx_r5 = i0.ɵɵnextContext(2); return ctx_r5.add(tracking_r4); });
+    i0.ɵɵelementStart(7, "span", 9);
+    i0.ɵɵelement(8, "i", 10);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    var tracking_r2 = ctx.$implicit;
+    var tracking_r4 = ctx.$implicit;
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate(tracking_r2.trackingNumber);
+    i0.ɵɵtextInterpolate2(" ", tracking_r4.courierCode, " ", tracking_r4.trackingNumber, " ");
 } }
-function ListComponent_p_6_Template(rf, ctx) { if (rf & 1) {
-    var _r7 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "p");
-    i0.ɵɵtext(1);
-    i0.ɵɵelementStart(2, "a", 8);
-    i0.ɵɵlistener("click", function ListComponent_p_6_Template_a_click_2_listener() { i0.ɵɵrestoreView(_r7); var tracking_r5 = ctx.$implicit; var ctx_r6 = i0.ɵɵnextContext(); return ctx_r6.remove(tracking_r5); });
-    i0.ɵɵtext(3, "remove");
+function ListComponent_div_0_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 1);
+    i0.ɵɵelementStart(1, "h2");
+    i0.ɵɵtext(2, "Found Tracking Numbers");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(3, "div", 3);
+    i0.ɵɵtemplate(4, ListComponent_div_0_div_4_Template, 9, 2, "div", 4);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    var tracking_r5 = ctx.$implicit;
+    var ctx_r0 = i0.ɵɵnextContext();
+    i0.ɵɵadvance(4);
+    i0.ɵɵproperty("ngForOf", ctx_r0.foundTracking);
+} }
+function ListComponent_div_4_div_1_Template(rf, ctx) { if (rf & 1) {
+    var _r10 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 5);
+    i0.ɵɵelementStart(1, "div", 6);
+    i0.ɵɵelementStart(2, "p", 7);
+    i0.ɵɵtext(3);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
+    i0.ɵɵelement(4, "div", 6);
+    i0.ɵɵelementStart(5, "div", 6);
+    i0.ɵɵelementStart(6, "button", 8);
+    i0.ɵɵlistener("click", function ListComponent_div_4_div_1_Template_button_click_6_listener() { i0.ɵɵrestoreView(_r10); var tracking_r8 = ctx.$implicit; var ctx_r9 = i0.ɵɵnextContext(2); return ctx_r9.remove(tracking_r8); });
+    i0.ɵɵelementStart(7, "span", 9);
+    i0.ɵɵelement(8, "i", 11);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    var tracking_r8 = ctx.$implicit;
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate2(" ", tracking_r8.courierCode, " ", tracking_r8.trackingNumber, " ");
+} }
+function ListComponent_div_4_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 3);
+    i0.ɵɵtemplate(1, ListComponent_div_4_div_1_Template, 9, 2, "div", 4);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    var ctx_r1 = i0.ɵɵnextContext();
     i0.ɵɵadvance(1);
-    i0.ɵɵtextInterpolate1("", tracking_r5.courierCode, " ");
+    i0.ɵɵproperty("ngForOf", ctx_r1.storedTracking);
+} }
+function ListComponent_div_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 3);
+    i0.ɵɵelementStart(1, "p", 7);
+    i0.ɵɵtext(2, "None Yet");
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
 } }
 var ListComponent = /** @class */ (function () {
     function ListComponent(appRef, log) {
@@ -357,7 +398,6 @@ var ListComponent = /** @class */ (function () {
         });
     };
     ListComponent.prototype.add = function (tracking) {
-        this.log.background('i will add', tracking);
         chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
     };
     ListComponent.prototype.remove = function (tracking) {
@@ -376,25 +416,22 @@ var ListComponent = /** @class */ (function () {
         });
     };
     ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef), i0.ɵɵdirectiveInject(i1.LogService)); };
-    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 7, vars: 3, consts: [[1, "container"], ["class", "columns is-mobile", 4, "ngFor", "ngForOf"], [4, "ngFor", "ngForOf"], [1, "columns", "is-mobile"], [1, "column"], [1, "button", "is-small", 3, "click"], [1, "icon", "is-small"], [1, "fas", "fa-plus"], [3, "click"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
-            i0.ɵɵelementStart(0, "h1");
-            i0.ɵɵtext(1, "Hey9");
+    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 6, vars: 3, consts: [["class", "section", 4, "ngIf"], [1, "section"], ["class", "container", 4, "ngIf"], [1, "container"], ["class", "columns is-mobile", 4, "ngFor", "ngForOf"], [1, "columns", "is-mobile"], [1, "column"], [1, "is-size-7"], [1, "button", "is-small", 3, "click"], [1, "icon", "is-small"], [1, "fas", "fa-plus"], [1, "fas", "fa-trash"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
+            i0.ɵɵtemplate(0, ListComponent_div_0_Template, 5, 1, "div", 0);
+            i0.ɵɵelementStart(1, "div", 1);
+            i0.ɵɵelementStart(2, "h2");
+            i0.ɵɵtext(3, "Saved Tracking Numbers");
             i0.ɵɵelementEnd();
-            i0.ɵɵelementStart(2, "div", 0);
-            i0.ɵɵtemplate(3, ListComponent_div_3_Template, 8, 1, "div", 1);
-            i0.ɵɵelementStart(4, "h2");
-            i0.ɵɵtext(5);
-            i0.ɵɵelementEnd();
-            i0.ɵɵtemplate(6, ListComponent_p_6_Template, 4, 1, "p", 2);
+            i0.ɵɵtemplate(4, ListComponent_div_4_Template, 2, 1, "div", 2);
+            i0.ɵɵtemplate(5, ListComponent_div_5_Template, 3, 0, "div", 2);
             i0.ɵɵelementEnd();
         } if (rf & 2) {
-            i0.ɵɵadvance(3);
-            i0.ɵɵproperty("ngForOf", ctx.foundTracking);
-            i0.ɵɵadvance(2);
-            i0.ɵɵtextInterpolate1("Stored (", ctx.storedTracking.length, ")");
+            i0.ɵɵproperty("ngIf", ctx.foundTracking.length);
+            i0.ɵɵadvance(4);
+            i0.ɵɵproperty("ngIf", ctx.storedTracking.length);
             i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngForOf", ctx.storedTracking);
-        } }, directives: [i2.NgForOf], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
+            i0.ɵɵproperty("ngIf", !ctx.storedTracking.length);
+        } }, directives: [i2.NgIf, i2.NgForOf], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
     return ListComponent;
 }());
 exports.ListComponent = ListComponent;
@@ -406,43 +443,6 @@ exports.ListComponent = ListComponent;
                 styleUrls: ['./list.component.scss']
             }]
     }], function () { return [{ type: i0.ApplicationRef }, { type: i1.LogService }]; }, null); })();
-
-
-/***/ }),
-
-/***/ "./src/app/pipes/found-tracking.pipe.ts":
-/*!**********************************************!*\
-  !*** ./src/app/pipes/found-tracking.pipe.ts ***!
-  \**********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-exports.__esModule = true;
-var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
-var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js");
-var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
-var compareTracking = function (x, y) {
-    return x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber;
-};
-var FoundTrackingPipe = /** @class */ (function () {
-    function FoundTrackingPipe() {
-    }
-    FoundTrackingPipe.prototype.transform = function (value, stored) {
-        return ramda_1.differenceWith(compareTracking, value, stored);
-    };
-    FoundTrackingPipe.ɵfac = function FoundTrackingPipe_Factory(t) { return new (t || FoundTrackingPipe)(); };
-    FoundTrackingPipe.ɵpipe = i0.ɵɵdefinePipe({ name: "foundTracking", type: FoundTrackingPipe, pure: true });
-    return FoundTrackingPipe;
-}());
-exports.FoundTrackingPipe = FoundTrackingPipe;
-/*@__PURE__*/ (function () { i0.ɵsetClassMetadata(FoundTrackingPipe, [{
-        type: core_1.Pipe,
-        args: [{
-                name: 'foundTracking'
-            }]
-    }], null, null); })();
 
 
 /***/ }),

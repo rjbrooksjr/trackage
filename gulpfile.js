@@ -55,7 +55,8 @@ var gulp = require('gulp');
       'src/app/**/*.ts',
       'src/app/**/*.html',
       'src/app/**/*.scss',
-      'src/manifest.json'
+      'src/manifest.json',
+      'src/styles.scss',
     ]).on('change', gulp.parallel('ng-build', 'content-script'));
 
     watch('src/app/styles.scss/**/*.scss', ['styles']);

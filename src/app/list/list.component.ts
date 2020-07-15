@@ -27,8 +27,6 @@ export class ListComponent implements OnInit {
   }
 
   add(tracking: StoredTrackingNumber): void {
-    this.log.background('i will add', tracking);
-
     chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
   }
 

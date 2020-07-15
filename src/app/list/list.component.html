@@ -1,15 +1,42 @@
-<h1>Hey9</h1>
-<div class="container">
-  <div *ngFor="let tracking of foundTracking" class="columns is-mobile">
-    <div class="column"><p>{{ tracking.trackingNumber }}</p></div>
-    <div class="column">
-      <button (click)="add(tracking)" class="button is-small">
-        <span class="icon is-small">
-          <i class="fas fa-plus"></i>
-        </span>
-      </button>
+<div *ngIf="foundTracking.length" class="section">
+  <h2>Found Tracking Numbers</h2>
+  <div class="container">
+    <div *ngFor="let tracking of foundTracking" class="columns is-mobile">
+      <div class="column">
+        <p class="is-size-7">
+          {{ tracking.courierCode }} {{ tracking.trackingNumber }}
+        </p>
+      </div>
+      <div class="column"></div>
+      <div class="column">
+        <button (click)="add(tracking)" class="button is-small">
+          <span class="icon is-small">
+            <i class="fas fa-plus"></i>
+          </span>
+        </button>
+      </div>
     </div>
   </div>
-  <h2>Stored ({{ storedTracking.length }})</h2>
-  <p *ngFor="let tracking of storedTracking">{{ tracking.courierCode }} <a (click)="remove(tracking)">remove</a></p>
+</div>
+
+<div class="section">
+  <h2>Saved Tracking Numbers</h2>
+  <div *ngIf="storedTracking.length" class="container">
+    <div *ngFor="let tracking of storedTracking" class="columns is-mobile">
+      <div class="column">
+        <p class="is-size-7">
+          {{ tracking.courierCode }} {{ tracking.trackingNumber }}
+        </p>
+      </div>
+      <div class="column"></div>
+      <div class="column">
+        <button (click)="remove(tracking)" class="button is-small">
+          <span class="icon is-small">
+            <i class="fas fa-trash"></i>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!storedTracking.length" class="container"><p class="is-size-7">None Yet</p></div>
 </div>

@@ -2,7 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { TrackingMatchResult, StoredTrackingNumber, Message } from '../common/types';
 import { unionWith, both, eqBy, prop, pipe, differenceWith } from 'ramda';
 
-const saveTracking = (tracking: StoredTrackingNumber[]) => chrome.storage.local.set({ tracking });
+let foundTracking: StoredTrackingNumber[] = [];
+let storedTracking: StoredTrackingNumber[] = [];
+
+const refreshPopup = () => chrome.runtime.sendMessage({
+  command: 'refresh',
+  data: getTracking(),
+});
+
+const saveTracking = (tracking: StoredTrackingNumber[]) => chrome.storage.local.set({ tracking }, refreshPopup);
 
 const splitTrackingNumbers = (data: TrackingMatchResult[]) =>
   data.map(row => row.trackingNumbers.map(
@@ -19,68 +27,68 @@ const storeTrackingNumber = (response: TrackingMatchResult[], storedTracking: St
 const compareTracking = (x: StoredTrackingNumber, y: StoredTrackingNumber): boolean =>
   x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber;
 
+const getTracking = () => ({
+  foundTracking: differenceWith(compareTracking, foundTracking, storedTracking),
+  storedTracking,
+});
+
+const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response: TrackingMatchResult[]) => {
+  foundTracking = [];
+
+  chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
+    storedTracking = tracking || [];
+
+    foundTracking = response ? splitTrackingNumbers(response) : [];
+
+    chrome.browserAction.setIcon({
+      path: foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+      tabId,
+    });
+  });
+});
+
 @Component({
   selector: 'app-background',
   templateUrl: './background.component.html',
   styleUrls: ['./background.component.scss']
 })
 export class BackgroundComponent implements OnInit {
-  foundTracking: StoredTrackingNumber[] = [];
-  storedTracking: StoredTrackingNumber[] = [];
-
   ngOnInit(): void {
     this.addListeners();
 
     chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) =>
-      this.storedTracking = tracking || []);
+      storedTracking = tracking || []);
   }
 
   addListeners(): void {
-    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => changeInfo.status === 'complete' && tab.active &&
+    chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => changeInfo.status === 'complete' && tab.active &&
       chrome.tabs.query({ active: true, currentWindow: true, }, tabs =>
-        tabs[0] && chrome.tabs.sendMessage(tabs[0].id, {}, (response: TrackingMatchResult[]) => {
-
-          chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
-            this.storedTracking = tracking || [];
-
-            // todo move this filtering to view
-            this.foundTracking = differenceWith(compareTracking, splitTrackingNumbers(response), this.storedTracking);
-
-            chrome.browserAction.setIcon({
-              path: this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
-              tabId: tabs[0].id,
-            });
-          });
-        })
+        tabs[0] && checkTab(tabs[0].id)
       )
     );
+
+    chrome.tabs.onActivated.addListener(({ tabId }) => checkTab(tabId));
 
     chrome.runtime.onMessage.addListener((request: Message, sender, sendResponse) => {
       switch (request.command) {
         case 'getTracking':
-          sendResponse({ foundTracking: this.foundTracking, storedTracking: this.storedTracking });
+          sendResponse(getTracking());
           break;
         case 'saveTracking':
-          storeTrackingNumber(request.data as TrackingMatchResult[], this.storedTracking);
+          storeTrackingNumber(request.data as TrackingMatchResult[], storedTracking);
           break;
         case 'removeTracking':
           chrome.storage.local.set({
-            tracking: differenceWith(compareTracking, this.storedTracking, request.data as StoredTrackingNumber[])
+            tracking: differenceWith(compareTracking, storedTracking, request.data as StoredTrackingNumber[])
           });
           break;
       }
     });
 
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-      console.log('storage change', namespace, changes);
-
+    chrome.storage.onChanged.addListener(changes => {
       if (changes.tracking) {
-        console.log('sending message');
-        this.storedTracking = changes.tracking.newValue as StoredTrackingNumber[];
-        chrome.runtime.sendMessage({
-          command: 'refresh',
-           data: { foundTracking: this.foundTracking, storedTracking: this.storedTracking }
-        });
+        storedTracking = changes.tracking.newValue as StoredTrackingNumber[];
+        refreshPopup();
       }
     });
   }
