@@ -5,16 +5,18 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ListComponent } from './list/list.component';
 import { BackgroundComponent } from './background/background.component';
+import { FoundTrackingPipe } from './pipes/found-tracking.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     ListComponent,
-    BackgroundComponent
+    BackgroundComponent,
+    FoundTrackingPipe
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -119,6 +119,7 @@ var app_routing_module_1 = __webpack_require__(/*! ./app-routing.module */ "./sr
 var app_component_1 = __webpack_require__(/*! ./app.component */ "./src/app/app.component.ts");
 var list_component_1 = __webpack_require__(/*! ./list/list.component */ "./src/app/list/list.component.ts");
 var background_component_1 = __webpack_require__(/*! ./background/background.component */ "./src/app/background/background.component.ts");
+var found_tracking_pipe_1 = __webpack_require__(/*! ./pipes/found-tracking.pipe */ "./src/app/pipes/found-tracking.pipe.ts");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var AppModule = /** @class */ (function () {
     function AppModule() {
@@ -126,14 +127,15 @@ var AppModule = /** @class */ (function () {
     AppModule.ɵmod = i0.ɵɵdefineNgModule({ type: AppModule, bootstrap: [app_component_1.AppComponent] });
     AppModule.ɵinj = i0.ɵɵdefineInjector({ factory: function AppModule_Factory(t) { return new (t || AppModule)(); }, providers: [], imports: [[
                 platform_browser_1.BrowserModule,
-                app_routing_module_1.AppRoutingModule
+                app_routing_module_1.AppRoutingModule,
             ]] });
     return AppModule;
 }());
 exports.AppModule = AppModule;
 (function () { (typeof ngJitMode === "undefined" || ngJitMode) && i0.ɵɵsetNgModuleScope(AppModule, { declarations: [app_component_1.AppComponent,
         list_component_1.ListComponent,
-        background_component_1.BackgroundComponent], imports: [platform_browser_1.BrowserModule,
+        background_component_1.BackgroundComponent,
+        found_tracking_pipe_1.FoundTrackingPipe], imports: [platform_browser_1.BrowserModule,
         app_routing_module_1.AppRoutingModule] }); })();
 /*@__PURE__*/ (function () { i0.ɵsetClassMetadata(AppModule, [{
         type: core_1.NgModule,
@@ -141,11 +143,12 @@ exports.AppModule = AppModule;
                 declarations: [
                     app_component_1.AppComponent,
                     list_component_1.ListComponent,
-                    background_component_1.BackgroundComponent
+                    background_component_1.BackgroundComponent,
+                    found_tracking_pipe_1.FoundTrackingPipe
                 ],
                 imports: [
                     platform_browser_1.BrowserModule,
-                    app_routing_module_1.AppRoutingModule
+                    app_routing_module_1.AppRoutingModule,
                 ],
                 providers: [],
                 bootstrap: [app_component_1.AppComponent]
@@ -403,6 +406,43 @@ exports.ListComponent = ListComponent;
                 styleUrls: ['./list.component.scss']
             }]
     }], function () { return [{ type: i0.ApplicationRef }, { type: i1.LogService }]; }, null); })();
+
+
+/***/ }),
+
+/***/ "./src/app/pipes/found-tracking.pipe.ts":
+/*!**********************************************!*\
+  !*** ./src/app/pipes/found-tracking.pipe.ts ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+exports.__esModule = true;
+var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
+var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js");
+var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
+var compareTracking = function (x, y) {
+    return x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber;
+};
+var FoundTrackingPipe = /** @class */ (function () {
+    function FoundTrackingPipe() {
+    }
+    FoundTrackingPipe.prototype.transform = function (value, stored) {
+        return ramda_1.differenceWith(compareTracking, value, stored);
+    };
+    FoundTrackingPipe.ɵfac = function FoundTrackingPipe_Factory(t) { return new (t || FoundTrackingPipe)(); };
+    FoundTrackingPipe.ɵpipe = i0.ɵɵdefinePipe({ name: "foundTracking", type: FoundTrackingPipe, pure: true });
+    return FoundTrackingPipe;
+}());
+exports.FoundTrackingPipe = FoundTrackingPipe;
+/*@__PURE__*/ (function () { i0.ɵsetClassMetadata(FoundTrackingPipe, [{
+        type: core_1.Pipe,
+        args: [{
+                name: 'foundTracking'
+            }]
+    }], null, null); })();
 
 
 /***/ }),

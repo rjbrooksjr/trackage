@@ -50,7 +50,6 @@ export class BackgroundComponent implements OnInit {
               path: this.foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
               tabId: tabs[0].id,
             });
-
           });
         })
       )
