@@ -51,7 +51,7 @@ const getTrackingStatus = (tracking: StoredTrackingNumber): Promise<string> => t
   : Promise.resolve('');
 
 const setIcon = (tabId: number) => chrome.browserAction.setIcon({
-  path: log('setting', getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png'),
+  path: getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
   ...tabId && { tabId },
 });
 

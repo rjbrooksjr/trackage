@@ -215,7 +215,7 @@ var getTrackingStatus = function (tracking) { return tracking.courierCode === 'u
         .then(function (html) { return node_html_parser_1.parse(html); })
         .then(function (html) { return html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString(); })
     : Promise.resolve(''); };
-var setIcon = function (tabId) { return chrome.browserAction.setIcon(__assign({ path: util_1.log('setting', getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png') }, tabId && { tabId: tabId })); };
+var setIcon = function (tabId) { return chrome.browserAction.setIcon(__assign({ path: getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png' }, tabId && { tabId: tabId })); };
 var checkTab = function (tabId) { return chrome.tabs.sendMessage(tabId, {}, function (response) {
     foundTracking = [];
     chrome.storage.local.get('tracking', function (_a) {
