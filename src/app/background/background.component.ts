@@ -1,18 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { TrackingMatchResult, StoredTrackingNumber, Message } from '../common/types';
-import { unionWith, both, eqBy, prop, pipe, differenceWith, merge } from 'ramda';
+import { unionWith, both, eqBy, prop, pipe, differenceWith, head } from 'ramda';
 import axios from 'axios';
 import * as usps from '../../../tracking_number_data/couriers/usps.json';
 import { parse } from 'node-html-parser';
-import { allKeys } from '../common/util';
+import { allKeys, log } from '../common/util';
 
 let foundTracking: StoredTrackingNumber[] = [];
 let storedTracking: StoredTrackingNumber[] = [];
 
-const refreshPopup = () => chrome.runtime.sendMessage({
-  command: 'refresh',
-  data: getTracking(),
-});
+const refreshPopup = () => {
+  chrome.tabs.query({ currentWindow: true, active: true}, pipe(head, prop('id'), setIcon));
+  chrome.runtime.sendMessage({
+    command: 'refresh',
+    data: getTracking(),
+  });
+};
 
 const saveTracking = (callback: () => void) => (tracking: StoredTrackingNumber[]) =>
   chrome.storage.local.set({ tracking }, callback);
@@ -47,18 +50,18 @@ const getTrackingStatus = (tracking: StoredTrackingNumber): Promise<string> => t
     .then(html => html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString())
   : Promise.resolve('');
 
+const setIcon = (tabId: number) => chrome.browserAction.setIcon({
+  path: log('setting', getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png'),
+  ...tabId && { tabId },
+});
+
 const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response: TrackingMatchResult[]) => {
   foundTracking = [];
 
   chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
     storedTracking = tracking || [];
-
     foundTracking = response ? splitTrackingNumbers(response) : [];
-
-    chrome.browserAction.setIcon({
-      path: foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
-      tabId,
-    });
+    setIcon(tabId);
   });
 });
 
@@ -68,9 +71,6 @@ const refreshTracking = () => Promise.all(storedTracking.map(t => allKeys({
   status: getTrackingStatus(t),
   courierCode: t.courierCode,
 }) as Promise<StoredTrackingNumber>))
-  // .then(x => (console.log('ok', x, storedTracking), x))
-  // .then(merge(storedTracking))
-  // .then(console.log);
   .then(saveTracking(refreshPopup));
 
 @Component({
@@ -83,7 +83,8 @@ export class BackgroundComponent implements OnInit {
     this.addListeners();
 
     chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) =>
-      storedTracking = tracking || []);
+      storedTracking = tracking || []
+    );
   }
 
   addListeners(): void {
@@ -102,8 +103,6 @@ export class BackgroundComponent implements OnInit {
           break;
         case 'saveTracking':
           storeTrackingNumber(request.data as StoredTrackingNumber, storedTracking);
-          // void getTrackingStatus(request.data as StoredTrackingNumber);
-          // void refreshTracking();
           break;
         case 'removeTracking':
           chrome.storage.local.set({

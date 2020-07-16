@@ -55,7 +55,7 @@ export const getSerialData = (
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unsafe-return
-export const log = (t, x) => (console.log(t, x), x);
+export const log = <T>(t: string, x: T): T => (console.log(t, x), x);
 
 // todo clean this up
 const zipObject = (keys = [], values = []) =>

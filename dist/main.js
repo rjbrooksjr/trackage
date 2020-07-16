@@ -162,6 +162,17 @@ exports.AppModule = AppModule;
 
 "use strict";
 
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js");
@@ -172,10 +183,13 @@ var util_1 = __webpack_require__(/*! ../common/util */ "./src/app/common/util.ts
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var foundTracking = [];
 var storedTracking = [];
-var refreshPopup = function () { return chrome.runtime.sendMessage({
-    command: 'refresh',
-    data: getTracking(),
-}); };
+var refreshPopup = function () {
+    chrome.tabs.query({ currentWindow: true, active: true }, ramda_1.pipe(ramda_1.head, ramda_1.prop('id'), setIcon));
+    chrome.runtime.sendMessage({
+        command: 'refresh',
+        data: getTracking(),
+    });
+};
 var saveTracking = function (callback) { return function (tracking) {
     return chrome.storage.local.set({ tracking: tracking }, callback);
 }; };
@@ -201,16 +215,14 @@ var getTrackingStatus = function (tracking) { return tracking.courierCode === 'u
         .then(function (html) { return node_html_parser_1.parse(html); })
         .then(function (html) { return html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString(); })
     : Promise.resolve(''); };
+var setIcon = function (tabId) { return chrome.browserAction.setIcon(__assign({ path: util_1.log('setting', getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png') }, tabId && { tabId: tabId })); };
 var checkTab = function (tabId) { return chrome.tabs.sendMessage(tabId, {}, function (response) {
     foundTracking = [];
     chrome.storage.local.get('tracking', function (_a) {
         var tracking = _a.tracking;
         storedTracking = tracking || [];
         foundTracking = response ? splitTrackingNumbers(response) : [];
-        chrome.browserAction.setIcon({
-            path: foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
-            tabId: tabId,
-        });
+        setIcon(tabId);
     });
 }); };
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
@@ -219,9 +231,6 @@ var refreshTracking = function () { return Promise.all(storedTracking.map(functi
     status: getTrackingStatus(t),
     courierCode: t.courierCode,
 }); }))
-    // .then(x => (console.log('ok', x, storedTracking), x))
-    // .then(merge(storedTracking))
-    // .then(console.log);
     .then(saveTracking(refreshPopup)); };
 var BackgroundComponent = /** @class */ (function () {
     function BackgroundComponent() {
@@ -249,8 +258,6 @@ var BackgroundComponent = /** @class */ (function () {
                     break;
                 case 'saveTracking':
                     storeTrackingNumber(request.data, storedTracking);
-                    // void getTrackingStatus(request.data as StoredTrackingNumber);
-                    // void refreshTracking();
                     break;
                 case 'removeTracking':
                     chrome.storage.local.set({
@@ -422,35 +429,35 @@ var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/
 var i1 = __webpack_require__(/*! ../services/log.service */ "./src/app/services/log.service.ts");
 var i2 = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/__ivy_ngcc__/fesm5/common.js");
 function ListComponent_div_0_div_4_Template(rf, ctx) { if (rf & 1) {
-    var _r6 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 5);
-    i0.ɵɵelementStart(1, "div", 6);
-    i0.ɵɵelementStart(2, "p", 7);
+    var _r7 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 6);
+    i0.ɵɵelementStart(1, "div", 7);
+    i0.ɵɵelementStart(2, "p", 8);
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(4, "div", 6);
-    i0.ɵɵelementStart(5, "div", 6);
-    i0.ɵɵelementStart(6, "button", 8);
-    i0.ɵɵlistener("click", function ListComponent_div_0_div_4_Template_button_click_6_listener() { i0.ɵɵrestoreView(_r6); var tracking_r4 = ctx.$implicit; var ctx_r5 = i0.ɵɵnextContext(2); return ctx_r5.add(tracking_r4); });
-    i0.ɵɵelementStart(7, "span", 9);
-    i0.ɵɵelement(8, "i", 10);
+    i0.ɵɵelement(4, "div", 7);
+    i0.ɵɵelementStart(5, "div", 7);
+    i0.ɵɵelementStart(6, "button", 9);
+    i0.ɵɵlistener("click", function ListComponent_div_0_div_4_Template_button_click_6_listener() { i0.ɵɵrestoreView(_r7); var tracking_r5 = ctx.$implicit; var ctx_r6 = i0.ɵɵnextContext(2); return ctx_r6.add(tracking_r5); });
+    i0.ɵɵelementStart(7, "span", 10);
+    i0.ɵɵelement(8, "i", 11);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    var tracking_r4 = ctx.$implicit;
+    var tracking_r5 = ctx.$implicit;
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate2(" ", tracking_r4.courierCode, " ", tracking_r4.trackingNumber, " ");
+    i0.ɵɵtextInterpolate2(" ", tracking_r5.courierCode, " ", tracking_r5.trackingNumber, " ");
 } }
 function ListComponent_div_0_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "div", 1);
     i0.ɵɵelementStart(1, "h2");
     i0.ɵɵtext(2, "Found Tracking Numbers");
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(3, "div", 3);
-    i0.ɵɵtemplate(4, ListComponent_div_0_div_4_Template, 9, 2, "div", 4);
+    i0.ɵɵelementStart(3, "div", 4);
+    i0.ɵɵtemplate(4, ListComponent_div_0_div_4_Template, 9, 2, "div", 5);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
@@ -458,47 +465,61 @@ function ListComponent_div_0_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵadvance(4);
     i0.ɵɵproperty("ngForOf", ctx_r0.foundTracking);
 } }
+function ListComponent_div_4_div_1_span_6_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "span");
+    i0.ɵɵtext(1);
+    i0.ɵɵelementEnd();
+} if (rf & 2) {
+    var tracking_r9 = i0.ɵɵnextContext().$implicit;
+    i0.ɵɵadvance(1);
+    i0.ɵɵtextInterpolate(tracking_r9.status);
+} }
+function ListComponent_div_4_div_1_ng_template_7_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelement(0, "i", 15);
+} }
 function ListComponent_div_4_div_1_Template(rf, ctx) { if (rf & 1) {
-    var _r10 = i0.ɵɵgetCurrentView();
-    i0.ɵɵelementStart(0, "div", 5);
-    i0.ɵɵelementStart(1, "div", 6);
-    i0.ɵɵelementStart(2, "p", 7);
+    var _r15 = i0.ɵɵgetCurrentView();
+    i0.ɵɵelementStart(0, "div", 6);
+    i0.ɵɵelementStart(1, "div", 7);
+    i0.ɵɵelementStart(2, "p", 8);
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(4, "div", 6);
-    i0.ɵɵelementStart(5, "p", 7);
-    i0.ɵɵtext(6);
+    i0.ɵɵelementStart(4, "div", 7);
+    i0.ɵɵelementStart(5, "p", 8);
+    i0.ɵɵtemplate(6, ListComponent_div_4_div_1_span_6_Template, 2, 1, "span", 12);
+    i0.ɵɵtemplate(7, ListComponent_div_4_div_1_ng_template_7_Template, 1, 0, "ng-template", null, 13, i0.ɵɵtemplateRefExtractor);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
-    i0.ɵɵelementStart(7, "div", 6);
-    i0.ɵɵelementStart(8, "button", 8);
-    i0.ɵɵlistener("click", function ListComponent_div_4_div_1_Template_button_click_8_listener() { i0.ɵɵrestoreView(_r10); var tracking_r8 = ctx.$implicit; var ctx_r9 = i0.ɵɵnextContext(2); return ctx_r9.remove(tracking_r8); });
-    i0.ɵɵelementStart(9, "span", 9);
-    i0.ɵɵelement(10, "i", 11);
+    i0.ɵɵelementStart(9, "div", 7);
+    i0.ɵɵelementStart(10, "button", 9);
+    i0.ɵɵlistener("click", function ListComponent_div_4_div_1_Template_button_click_10_listener() { i0.ɵɵrestoreView(_r15); var tracking_r9 = ctx.$implicit; var ctx_r14 = i0.ɵɵnextContext(2); return ctx_r14.remove(tracking_r9); });
+    i0.ɵɵelementStart(11, "span", 10);
+    i0.ɵɵelement(12, "i", 14);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
 } if (rf & 2) {
-    var tracking_r8 = ctx.$implicit;
+    var tracking_r9 = ctx.$implicit;
+    var _r11 = i0.ɵɵreference(8);
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate2(" ", tracking_r8.courierCode, " ", tracking_r8.trackingNumber, " ");
+    i0.ɵɵtextInterpolate2(" ", tracking_r9.courierCode, " ", tracking_r9.trackingNumber, " ");
     i0.ɵɵadvance(3);
-    i0.ɵɵtextInterpolate1(" ", tracking_r8.status, " ");
+    i0.ɵɵproperty("ngIf", tracking_r9.status)("ngIfElse", _r11);
 } }
 function ListComponent_div_4_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 3);
-    i0.ɵɵtemplate(1, ListComponent_div_4_div_1_Template, 11, 3, "div", 4);
+    i0.ɵɵelementStart(0, "div", 4);
+    i0.ɵɵtemplate(1, ListComponent_div_4_div_1_Template, 13, 4, "div", 5);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     var ctx_r1 = i0.ɵɵnextContext();
     i0.ɵɵadvance(1);
     i0.ɵɵproperty("ngForOf", ctx_r1.storedTracking);
 } }
-function ListComponent_div_5_Template(rf, ctx) { if (rf & 1) {
-    i0.ɵɵelementStart(0, "div", 3);
-    i0.ɵɵelementStart(1, "p", 7);
+function ListComponent_ng_template_5_Template(rf, ctx) { if (rf & 1) {
+    i0.ɵɵelementStart(0, "div", 4);
+    i0.ɵɵelementStart(1, "p", 8);
     i0.ɵɵtext(2, "None Yet");
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
@@ -541,21 +562,20 @@ var ListComponent = /** @class */ (function () {
         });
     };
     ListComponent.ɵfac = function ListComponent_Factory(t) { return new (t || ListComponent)(i0.ɵɵdirectiveInject(i0.ApplicationRef), i0.ɵɵdirectiveInject(i1.LogService)); };
-    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 6, vars: 3, consts: [["class", "section", 4, "ngIf"], [1, "section"], ["class", "container", 4, "ngIf"], [1, "container"], ["class", "columns is-mobile", 4, "ngFor", "ngForOf"], [1, "columns", "is-mobile"], [1, "column"], [1, "is-size-7"], [1, "button", "is-small", 3, "click"], [1, "icon", "is-small"], [1, "fas", "fa-plus"], [1, "fas", "fa-trash"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
+    ListComponent.ɵcmp = i0.ɵɵdefineComponent({ type: ListComponent, selectors: [["app-list"]], decls: 7, vars: 3, consts: [["class", "section", 4, "ngIf"], [1, "section"], ["class", "container", 4, "ngIf", "ngIfElse"], ["nothingStored", ""], [1, "container"], ["class", "columns is-mobile", 4, "ngFor", "ngForOf"], [1, "columns", "is-mobile"], [1, "column"], [1, "is-size-7"], [1, "button", "is-small", 3, "click"], [1, "icon", "is-small"], [1, "fas", "fa-plus"], [4, "ngIf", "ngIfElse"], ["statusLoading", ""], [1, "fas", "fa-trash"], [1, "fa", "fa-spinner", "fa-pulse", "fa-fw"]], template: function ListComponent_Template(rf, ctx) { if (rf & 1) {
             i0.ɵɵtemplate(0, ListComponent_div_0_Template, 5, 1, "div", 0);
             i0.ɵɵelementStart(1, "div", 1);
             i0.ɵɵelementStart(2, "h2");
             i0.ɵɵtext(3, "Saved Tracking Numbers");
             i0.ɵɵelementEnd();
             i0.ɵɵtemplate(4, ListComponent_div_4_Template, 2, 1, "div", 2);
-            i0.ɵɵtemplate(5, ListComponent_div_5_Template, 3, 0, "div", 2);
+            i0.ɵɵtemplate(5, ListComponent_ng_template_5_Template, 3, 0, "ng-template", null, 3, i0.ɵɵtemplateRefExtractor);
             i0.ɵɵelementEnd();
         } if (rf & 2) {
+            var _r2 = i0.ɵɵreference(6);
             i0.ɵɵproperty("ngIf", ctx.foundTracking.length);
             i0.ɵɵadvance(4);
-            i0.ɵɵproperty("ngIf", ctx.storedTracking.length);
-            i0.ɵɵadvance(1);
-            i0.ɵɵproperty("ngIf", !ctx.storedTracking.length);
+            i0.ɵɵproperty("ngIf", ctx.storedTracking.length)("ngIfElse", _r2);
         } }, directives: [i2.NgIf, i2.NgForOf], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzcmMvYXBwL2xpc3QvbGlzdC5jb21wb25lbnQuc2NzcyJ9 */"] });
     return ListComponent;
 }());

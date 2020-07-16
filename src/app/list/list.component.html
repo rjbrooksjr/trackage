@@ -21,7 +21,7 @@
 
 <div class="section">
   <h2>Saved Tracking Numbers</h2>
-  <div *ngIf="storedTracking.length" class="container">
+  <div *ngIf="storedTracking.length; else nothingStored" class="container">
     <div *ngFor="let tracking of storedTracking" class="columns is-mobile">
       <div class="column">
         <p class="is-size-7">
@@ -30,7 +30,8 @@
       </div>
       <div class="column">
         <p class="is-size-7">
-          {{ tracking.status }}
+          <span *ngIf="tracking.status; else statusLoading">{{ tracking.status }}</span>
+          <ng-template #statusLoading><i class="fa fa-spinner fa-pulse fa-fw"></i></ng-template>
         </p>
       </div>
       <div class="column">
@@ -42,5 +43,5 @@
       </div>
     </div>
   </div>
-  <div *ngIf="!storedTracking.length" class="container"><p class="is-size-7">None Yet</p></div>
+  <ng-template #nothingStored><div class="container"><p class="is-size-7">None Yet</p></div></ng-template>
 </div>
