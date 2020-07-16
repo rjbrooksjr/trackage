@@ -3457,7 +3457,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
  *
  * Learn more in https://angular.io/guide/browser-support
  */
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 /***************************************************************************************************
  * BROWSER POLYFILLS
  */
@@ -3503,7 +3503,7 @@ __webpack_require__(/*! zone.js/dist/zone */ "./node_modules/zone.js/dist/zone.j
 
 /***/ }),
 
-/***/ 1:
+/***/ 2:
 /*!********************************!*\
   !*** multi ./src/polyfills.ts ***!
   \********************************/
@@ -3515,5 +3515,5 @@ module.exports = __webpack_require__(/*! /home/rich/code/pt/src/polyfills.ts */"
 
 /***/ })
 
-},[[1,"runtime"]]]);
+},[[2,"runtime"]]]);
 //# sourceMappingURL=polyfills.js.map

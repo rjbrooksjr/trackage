@@ -483,7 +483,7 @@ module.exports = exported;
 
 /***/ }),
 
-/***/ 2:
+/***/ 3:
 /*!****************************************************************************************!*\
   !*** multi ./src/styles.scss ./node_modules/@fortawesome/fontawesome-free/css/all.css ***!
   \****************************************************************************************/
@@ -496,5 +496,5 @@ module.exports = __webpack_require__(/*! /home/rich/code/pt/node_modules/@fortaw
 
 /***/ })
 
-},[[2,"runtime"]]]);
+},[[3,"runtime"]]]);
 //# sourceMappingURL=styles.js.map

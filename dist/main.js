@@ -32,7 +32,7 @@ webpackEmptyAsyncContext.id = "./$$_lazy_route_resource lazy recursive";
 
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var router_1 = __webpack_require__(/*! @angular/router */ "./node_modules/@angular/router/__ivy_ngcc__/fesm5/router.js");
 var list_component_1 = __webpack_require__(/*! ./list/list.component */ "./src/app/list/list.component.ts");
@@ -58,7 +58,7 @@ exports.AppRoutingModule = AppRoutingModule;
         type: core_1.NgModule,
         args: [{
                 imports: [router_1.RouterModule.forRoot(routes, { useHash: true })],
-                exports: [router_1.RouterModule]
+                exports: [router_1.RouterModule],
             }]
     }], null, null); })();
 
@@ -74,7 +74,7 @@ exports.AppRoutingModule = AppRoutingModule;
 
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i1 = __webpack_require__(/*! @angular/router */ "./node_modules/@angular/router/__ivy_ngcc__/fesm5/router.js");
@@ -110,7 +110,7 @@ exports.AppComponent = AppComponent;
 
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var platform_browser_1 = __webpack_require__(/*! @angular/platform-browser */ "./node_modules/@angular/platform-browser/__ivy_ngcc__/fesm5/platform-browser.js");
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var app_routing_module_1 = __webpack_require__(/*! ./app-routing.module */ "./src/app/app-routing.module.ts");
@@ -162,30 +162,45 @@ exports.AppModule = AppModule;
 
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js");
+var axios_1 = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+var usps = __webpack_require__(/*! ../../../tracking_number_data/couriers/usps.json */ "./tracking_number_data/couriers/usps.json");
+var node_html_parser_1 = __webpack_require__(/*! node-html-parser */ "./node_modules/node-html-parser/dist/index.js");
+var util_1 = __webpack_require__(/*! ../common/util */ "./src/app/common/util.ts");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var foundTracking = [];
 var storedTracking = [];
 var refreshPopup = function () { return chrome.runtime.sendMessage({
     command: 'refresh',
-    data: getTracking()
+    data: getTracking(),
 }); };
-var saveTracking = function (tracking) { return chrome.storage.local.set({ tracking: tracking }, refreshPopup); };
+var saveTracking = function (callback) { return function (tracking) {
+    return chrome.storage.local.set({ tracking: tracking }, callback);
+}; };
 var splitTrackingNumbers = function (data) {
     return data.map(function (row) { return row.trackingNumbers.map(function (trackingNumber) { return ({ courierCode: row.courierCode, trackingNumber: trackingNumber.replace(/[^a-zA-Z\d]/g, '') }); }); }).flat(Infinity);
 };
 var storeTrackingNumber = function (response, storedTracking) { return ramda_1.pipe(
 // @ts-ignore
-ramda_1.unionWith(ramda_1.both(ramda_1.eqBy(ramda_1.prop('courierCode')), ramda_1.eqBy(ramda_1.prop('trackingNumber'))), storedTracking), saveTracking)(response); };
+ramda_1.unionWith(ramda_1.both(ramda_1.eqBy(ramda_1.prop('courierCode')), ramda_1.eqBy(ramda_1.prop('trackingNumber'))), storedTracking), saveTracking(function () {
+    refreshPopup();
+    void refreshTracking();
+}))(response); };
 var compareTracking = function (x, y) {
     return x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber;
 };
 var getTracking = function () { return ({
     foundTracking: ramda_1.differenceWith(compareTracking, foundTracking, storedTracking),
-    storedTracking: storedTracking
+    storedTracking: storedTracking,
 }); };
+var getTrackingStatus = function (tracking) { return tracking.courierCode === 'usps'
+    ? axios_1.default.get(usps.tracking_numbers[0].tracking_url.replace('%s', tracking.trackingNumber))
+        .then(ramda_1.prop('data'))
+        .then(function (html) { return node_html_parser_1.parse(html); })
+        .then(function (html) { return html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString(); })
+    : Promise.resolve(''); };
 var checkTab = function (tabId) { return chrome.tabs.sendMessage(tabId, {}, function (response) {
     foundTracking = [];
     chrome.storage.local.get('tracking', function (_a) {
@@ -194,10 +209,20 @@ var checkTab = function (tabId) { return chrome.tabs.sendMessage(tabId, {}, func
         foundTracking = response ? splitTrackingNumbers(response) : [];
         chrome.browserAction.setIcon({
             path: foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
-            tabId: tabId
+            tabId: tabId,
         });
     });
 }); };
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+var refreshTracking = function () { return Promise.all(storedTracking.map(function (t) { return util_1.allKeys({
+    trackingNumber: t.trackingNumber,
+    status: getTrackingStatus(t),
+    courierCode: t.courierCode,
+}); }))
+    // .then(x => (console.log('ok', x, storedTracking), x))
+    // .then(merge(storedTracking))
+    // .then(console.log);
+    .then(saveTracking(refreshPopup)); };
 var BackgroundComponent = /** @class */ (function () {
     function BackgroundComponent() {
     }
@@ -210,7 +235,7 @@ var BackgroundComponent = /** @class */ (function () {
     };
     BackgroundComponent.prototype.addListeners = function () {
         chrome.tabs.onUpdated.addListener(function (_tabId, changeInfo, tab) { return changeInfo.status === 'complete' && tab.active &&
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.query({ active: true, currentWindow: true, }, function (tabs) {
                 return tabs[0] && checkTab(tabs[0].id);
             }); });
         chrome.tabs.onActivated.addListener(function (_a) {
@@ -224,6 +249,8 @@ var BackgroundComponent = /** @class */ (function () {
                     break;
                 case 'saveTracking':
                     storeTrackingNumber(request.data, storedTracking);
+                    // void getTrackingStatus(request.data as StoredTrackingNumber);
+                    // void refreshTracking();
                     break;
                 case 'removeTracking':
                     chrome.storage.local.set({
@@ -260,6 +287,98 @@ exports.BackgroundComponent = BackgroundComponent;
 
 /***/ }),
 
+/***/ "./src/app/common/util.ts":
+/*!********************************!*\
+  !*** ./src/app/common/util.ts ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var ramda_1 = __webpack_require__(/*! ramda */ "./node_modules/ramda/es/index.js");
+var toObj = function (list) { return Object.assign({}, list); };
+var evenKeys = function (_v, k) { return k % 2 === 0; };
+var oddKeys = ramda_1.complement(evenKeys);
+var formatList = function (tracking) { return ramda_1.pipe(ramda_1.reverse, ramda_1.split(''), ramda_1.map(parseInt))(tracking); };
+var getSum = function (parityFn, tracking) { return ramda_1.pipe(toObj, ramda_1.pickBy(parityFn), ramda_1.values, ramda_1.sum)(tracking); };
+exports.dummy = function (_serialData) { return true; };
+exports.mod10 = function (_a) {
+    var serial = _a.serial, checkDigit = _a.checkDigit, checksum = _a.checksum;
+    var t = formatList(serial.replace(/[^\d]/g, ''));
+    var sum = (getSum(evenKeys, t) * checksum.evens_multiplier) + (getSum(oddKeys, t) * checksum.odds_multiplier);
+    return (10 - sum % 10) % 10 === parseInt(checkDigit);
+};
+var formatSerial = function (serial, numberFormat) {
+    return numberFormat.prepend_if && new RegExp(numberFormat.prepend_if.matches_regex).test(serial)
+        ? "" + numberFormat.prepend_if.content + serial
+        : serial;
+};
+var matchTrackingData = function (trackingNumber, regex) {
+    var match = new RegExp(regex.join('')).exec(trackingNumber);
+    return match && {
+        serial: match.groups.SerialNumber.replace(/\s/g, ''),
+        checkDigit: match.groups.CheckDigit,
+    };
+};
+exports.getSerialData = function (trackingNumber, 
+// eslint-disable-next-line camelcase
+_a) {
+    var regex = _a.regex, _b = _a.validation, serial_number_format = _b.serial_number_format, checksum = _b.checksum;
+    var trackingData = matchTrackingData(trackingNumber, regex);
+    return {
+        // eslint-disable-next-line camelcase
+        serial: serial_number_format
+            ? formatSerial(trackingData.serial, serial_number_format)
+            : trackingData.serial,
+        checkDigit: trackingData.checkDigit,
+        checksum: checksum,
+    };
+};
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-unsafe-return
+exports.log = function (t, x) { return (console.log(t, x), x); };
+// todo clean this up
+var zipObject = function (keys, values) {
+    if (keys === void 0) { keys = []; }
+    if (values === void 0) { values = []; }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment
+    return keys.reduce(function (accumulator, key, index) {
+        var _a;
+        return (__assign(__assign({}, accumulator), (_a = {}, _a[key] = values[index], _a)));
+    }, {});
+};
+// todo clean this shit up
+exports.allKeys = function (obj) {
+    var keys = Object.keys(obj);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return Promise.all(keys.map(function (key) {
+        var value = obj[key];
+        // @ts-ignore
+        if (typeof value === 'object' && !value.then) {
+            // @ts-ignore
+            return exports.allKeys(value);
+        }
+        return value;
+    }))
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        .then(function (result) { return zipObject(keys, result); });
+};
+
+
+/***/ }),
+
 /***/ "./src/app/environments/environment.ts":
 /*!*********************************************!*\
   !*** ./src/app/environments/environment.ts ***!
@@ -272,7 +391,7 @@ exports.BackgroundComponent = BackgroundComponent;
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.environment = {
     production: false
 };
@@ -297,7 +416,7 @@ exports.environment = {
 
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i1 = __webpack_require__(/*! ../services/log.service */ "./src/app/services/log.service.ts");
@@ -347,12 +466,16 @@ function ListComponent_div_4_div_1_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵtext(3);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
-    i0.ɵɵelement(4, "div", 6);
-    i0.ɵɵelementStart(5, "div", 6);
-    i0.ɵɵelementStart(6, "button", 8);
-    i0.ɵɵlistener("click", function ListComponent_div_4_div_1_Template_button_click_6_listener() { i0.ɵɵrestoreView(_r10); var tracking_r8 = ctx.$implicit; var ctx_r9 = i0.ɵɵnextContext(2); return ctx_r9.remove(tracking_r8); });
-    i0.ɵɵelementStart(7, "span", 9);
-    i0.ɵɵelement(8, "i", 11);
+    i0.ɵɵelementStart(4, "div", 6);
+    i0.ɵɵelementStart(5, "p", 7);
+    i0.ɵɵtext(6);
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementEnd();
+    i0.ɵɵelementStart(7, "div", 6);
+    i0.ɵɵelementStart(8, "button", 8);
+    i0.ɵɵlistener("click", function ListComponent_div_4_div_1_Template_button_click_8_listener() { i0.ɵɵrestoreView(_r10); var tracking_r8 = ctx.$implicit; var ctx_r9 = i0.ɵɵnextContext(2); return ctx_r9.remove(tracking_r8); });
+    i0.ɵɵelementStart(9, "span", 9);
+    i0.ɵɵelement(10, "i", 11);
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
     i0.ɵɵelementEnd();
@@ -361,10 +484,12 @@ function ListComponent_div_4_div_1_Template(rf, ctx) { if (rf & 1) {
     var tracking_r8 = ctx.$implicit;
     i0.ɵɵadvance(3);
     i0.ɵɵtextInterpolate2(" ", tracking_r8.courierCode, " ", tracking_r8.trackingNumber, " ");
+    i0.ɵɵadvance(3);
+    i0.ɵɵtextInterpolate1(" ", tracking_r8.status, " ");
 } }
 function ListComponent_div_4_Template(rf, ctx) { if (rf & 1) {
     i0.ɵɵelementStart(0, "div", 3);
-    i0.ɵɵtemplate(1, ListComponent_div_4_div_1_Template, 9, 2, "div", 4);
+    i0.ɵɵtemplate(1, ListComponent_div_4_div_1_Template, 11, 3, "div", 4);
     i0.ɵɵelementEnd();
 } if (rf & 2) {
     var ctx_r1 = i0.ɵɵnextContext();
@@ -456,7 +581,7 @@ exports.ListComponent = ListComponent;
 
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var i0 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var LogService = /** @class */ (function () {
@@ -495,7 +620,7 @@ exports.LogService = LogService;
 
 "use strict";
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/__ivy_ngcc__/fesm5/core.js");
 var environment_1 = __webpack_require__(/*! ./app/environments/environment */ "./src/app/environments/environment.ts");
 var __NgCli_bootstrap_1 = __webpack_require__(/*! ./app/app.module */ "./src/app/app.module.ts");
@@ -503,8 +628,20 @@ var __NgCli_bootstrap_2 = __webpack_require__(/*! @angular/platform-browser */ "
 if (environment_1.environment.production) {
     core_1.enableProdMode();
 }
-__NgCli_bootstrap_2.platformBrowser().bootstrapModule(__NgCli_bootstrap_1.AppModule)["catch"](function (err) { return console.error(err); });
+__NgCli_bootstrap_2.platformBrowser().bootstrapModule(__NgCli_bootstrap_1.AppModule)
+    .catch(function (err) { return console.error(err); });
 
+
+/***/ }),
+
+/***/ "./tracking_number_data/couriers/usps.json":
+/*!*************************************************!*\
+  !*** ./tracking_number_data/couriers/usps.json ***!
+  \*************************************************/
+/*! exports provided: name, courier_code, tracking_numbers, default */
+/***/ (function(module) {
+
+module.exports = JSON.parse("{\"name\":\"United States Postal Service\",\"courier_code\":\"usps\",\"tracking_numbers\":[{\"tracking_url\":\"https://tools.usps.com/go/TrackConfirmAction?tLabels=%s\",\"name\":\"USPS 20\",\"description\":\"20 digit USPS numbers\",\"regex\":[\"\\\\s*(?<SerialNumber>\",\"(?<ServiceType>([0-9]\\\\s*){2})\",\"(?<ShipperId>([0-9]\\\\s*){9})\",\"(?<PackageId>([0-9]\\\\s*){8})\",\")\",\"(?<CheckDigit>[0-9]\\\\s*)\"],\"validation\":{\"checksum\":{\"name\":\"mod10\",\"evens_multiplier\":3,\"odds_multiplier\":1}},\"test_numbers\":{\"valid\":[\"0307 1790 0005 2348 3741\",\" 0 3 0 7   1 7 9 0   0 0 0 5   2 3 4 8   3 7 4 1 \",\"7112 3456 7891 2345 6787\"],\"invalid\":[\"0307 1790 0005 2348 3742\"]},\"additional\":[{\"name\":\"Service Type\",\"regex_group_name\":\"ServiceType\",\"lookup\":[{\"matches\":\"71\",\"name\":\"Certified Mail\"},{\"matches\":\"73\",\"name\":\"Insured Mail\"},{\"matches\":\"77\",\"name\":\"Registered Mail\"},{\"matches\":\"81\",\"name\":\"Return Receipt For Merchanise\"}]}]},{\"name\":\"USPS 34v2\",\"description\":\"variation on 34 digit USPS IMpd numbers\",\"regex\":[\"\\\\s*(?<RoutingApplicationId>4\\\\s*2\\\\s*0\\\\s*)(?<DestinationZip>([0-9]\\\\s*){5})\",\"(?<RoutingNumber>([0-9]\\\\s*){4})\",\"(?<SerialNumber>\",\"(?<ApplicationIdentifier>9\\\\s*[2345]\\\\s*)?\",\"(?<ShipperId>([0-9]\\\\s*){8})\",\"(?<PackageId>([0-9]\\\\s*){11})\",\")\",\"(?<CheckDigit>[0-9]\\\\s*)\"],\"validation\":{\"checksum\":{\"name\":\"mod10\",\"evens_multiplier\":3,\"odds_multiplier\":1}},\"tracking_url\":\"https://tools.usps.com/go/TrackConfirmAction?tLabels=%s\",\"test_numbers\":{\"valid\":[\"4201002334249200190132607600833457\",\"4201028200009261290113185417468510\",\" 4 2 0 1 0 2 8 2 0 0 0 0 9 2 6 1 2 9 0 1 1 3 1 8 5 4 1 7 4 6 8 5 1 0 \"],\"invalid\":[\"4201028200009261290113185417468511\"]}},{\"name\":\"USPS 91\",\"description\":\"USPS now calls this the IMpd barcode format\",\"regex\":[\"\\\\s*(?:(?<RoutingApplicationId>4\\\\s*2\\\\s*0\\\\s*)(?<DestinationZip>([0-9]\\\\s*){5}))?\",\"(?<SerialNumber>\",\"(?<ApplicationIdentifier>9\\\\s*[12345]\\\\s*)?\",\"(?<SCNC>([0-9]\\\\s*){2})\",\"(?<ServiceType>([0-9]\\\\s*){2})\",\"(?<ShipperId>([0-9]\\\\s*){8})\",\"(?<PackageId>([0-9]\\\\s*){11}|([0-9]\\\\s*){7})\",\")\",\"(?<CheckDigit>[0-9]\\\\s*)\"],\"validation\":{\"checksum\":{\"name\":\"mod10\",\"evens_multiplier\":3,\"odds_multiplier\":1},\"serial_number_format\":{\"prepend_if\":{\"matches_regex\":\"^(?!9[1-5]).+\",\"content\":\"91\"}}},\"tracking_url\":\"https://tools.usps.com/go/TrackConfirmAction?tLabels=%s\",\"test_numbers\":{\"valid\":[\"420 22153 9101026837331000039521\",\"7196 9010 7560 0307 7385\",\"9505 5110 6960 5048 6006 24\",\"9101 1234 5678 9000 0000 13\",\"92748931507708513018050063\",\"9400 1112 0108 0805 4830 16\",\"9361 2898 7870 0317 6337 95\",\" 9 3 6 1   2 8 9 8   7 8 7 0   0 3 1 7   6 3 3 7   9 5 \",\"9405803699300124287899\"],\"invalid\":[\"61299998820821171811\",\"9200000000000000000000\",\"420000000000000000000000000000\",\"420000009200000000000000000000\"]}}]}");
 
 /***/ }),
 

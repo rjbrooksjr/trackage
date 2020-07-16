@@ -28,7 +28,11 @@
           {{ tracking.courierCode }} {{ tracking.trackingNumber }}
         </p>
       </div>
-      <div class="column"></div>
+      <div class="column">
+        <p class="is-size-7">
+          {{ tracking.status }}
+        </p>
+      </div>
       <div class="column">
         <button (click)="remove(tracking)" class="button is-small">
           <span class="icon is-small">

@@ -1,17 +1,19 @@
 var gulp = require('gulp');
-  var ts = require('gulp-typescript');
-  var exec = require('child_process').exec;
-  var browserify = require("browserify");
-  var source = require('vinyl-source-stream');
-  var buffer = require('vinyl-buffer');
-  var uglify = require('gulp-uglify');
-  var watch = require('gulp-watch');
-  var livereload = require('gulp-livereload');
-  var sourcemaps = require('gulp-sourcemaps');
-  var plumber = require('gulp-plumber');
-  var connect = require('gulp-connect');
+var ts = require('gulp-typescript');
+var exec = require('child_process').exec;
+var browserify = require("browserify");
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
+var watch = require('gulp-watch');
+var livereload = require('gulp-livereload');
+var sourcemaps = require('gulp-sourcemaps');
+var plumber = require('gulp-plumber');
+var connect = require('gulp-connect');
+var run = require('gulp-run-command').default;
 
   var tsify = require("tsify");
+const { getUnpackedSettings } = require('http2');
   gulp.task('ng-build', function(cb) {
       console.log('running ng build...');
       exec('ng build', function (err, stdout, stderr) {
@@ -64,4 +66,7 @@ var gulp = require('gulp');
     return true;
   });
 
-gulp.task('default', gulp.parallel('ng-build', 'content-script'));
+  // todo how can we kill content script?
+  gulp.task('clean', run('/usr/bin/pkill -f "ng build"', { ignoreErrors: true }));
+
+gulp.task('default', gulp.series('clean', gulp.parallel('ng-build', 'content-script')));
