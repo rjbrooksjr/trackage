@@ -16,7 +16,7 @@ var run = require('gulp-run-command').default;
 const { getUnpackedSettings } = require('http2');
   gulp.task('ng-build', function(cb) {
       console.log('running ng build...');
-      exec('ng build', function (err, stdout, stderr) {
+      exec('ng build --prod', function (_err, stdout, stderr) {
           console.log(stdout);
           console.log(stderr);
           cb();

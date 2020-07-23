@@ -225,6 +225,7 @@ var checkTab = function (tabId) { return chrome.tabs.sendMessage(tabId, {}, func
         setIcon(tabId);
     });
 }); };
+// @todo Don't check delivered packages
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
 var refreshTracking = function () { return Promise.all(storedTracking.map(function (t) { return util_1.allKeys({
     trackingNumber: t.trackingNumber,
@@ -239,7 +240,9 @@ var BackgroundComponent = /** @class */ (function () {
         this.addListeners();
         chrome.storage.local.get('tracking', function (_a) {
             var tracking = _a.tracking;
-            return storedTracking = tracking || [];
+            storedTracking = tracking || [];
+            void refreshTracking();
+            chrome.alarms.create('updateTracking', { periodInMinutes: 60 });
         });
     };
     BackgroundComponent.prototype.addListeners = function () {
@@ -272,6 +275,7 @@ var BackgroundComponent = /** @class */ (function () {
                 refreshPopup();
             }
         });
+        chrome.alarms.onAlarm.addListener(function (alarm) { return alarm.name === 'updateTracking' ? void refreshTracking() : ramda_1.identity; });
     };
     BackgroundComponent.ɵfac = function BackgroundComponent_Factory(t) { return new (t || BackgroundComponent)(); };
     BackgroundComponent.ɵcmp = i0.ɵɵdefineComponent({ type: BackgroundComponent, selectors: [["app-background"]], decls: 2, vars: 0, template: function BackgroundComponent_Template(rf, ctx) { if (rf & 1) {

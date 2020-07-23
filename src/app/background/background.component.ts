@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { TrackingMatchResult, StoredTrackingNumber, Message } from '../common/types';
-import { unionWith, both, eqBy, prop, pipe, differenceWith, head } from 'ramda';
+import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity } from 'ramda';
 import axios from 'axios';
 import * as usps from '../../../tracking_number_data/couriers/usps.json';
 import { parse } from 'node-html-parser';
-import { allKeys, log } from '../common/util';
+import { allKeys } from '../common/util';
 
 let foundTracking: StoredTrackingNumber[] = [];
 let storedTracking: StoredTrackingNumber[] = [];
@@ -65,6 +65,7 @@ const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response
   });
 });
 
+// @todo Don't check delivered packages
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
 const refreshTracking = () => Promise.all(storedTracking.map(t => allKeys({
   trackingNumber: t.trackingNumber,
@@ -82,9 +83,11 @@ export class BackgroundComponent implements OnInit {
   ngOnInit(): void {
     this.addListeners();
 
-    chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) =>
-      storedTracking = tracking || []
-    );
+    chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
+      storedTracking = tracking || [];
+      void refreshTracking();
+      chrome.alarms.create('updateTracking', { periodInMinutes: 60 });
+    });
   }
 
   addListeners(): void {
@@ -118,5 +121,7 @@ export class BackgroundComponent implements OnInit {
         refreshPopup();
       }
     });
+
+    chrome.alarms.onAlarm.addListener(alarm => alarm.name === 'updateTracking' ? void refreshTracking() : identity);
   }
 }
