@@ -3,7 +3,8 @@
     "experimentalDecorators": true,
     "lib": ["es2019", "dom"],
     "resolveJsonModule": true,
-    "target": "es5"
+    "target": "es5",
+    "skipLibCheck": true
   },
   "include": [
     "src/content-script",
