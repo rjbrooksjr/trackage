@@ -1,6 +1,7 @@
 import { Component, OnInit, ApplicationRef } from '@angular/core';
-import { StoredTrackingNumber, Message, TrackingResponse } from '../common/types';
+import { Message, TrackingResponse } from '../common/types';
 import { LogService } from '../services/log.service';
+import { TrackingNumber } from 'ts-tracking-number';
 
 @Component({
   selector: 'app-list',
@@ -8,8 +9,8 @@ import { LogService } from '../services/log.service';
   styleUrls: ['./list.component.scss']
 })
 export class ListComponent implements OnInit {
-  foundTracking: StoredTrackingNumber[] = [];
-  storedTracking: StoredTrackingNumber[] = [];
+  foundTracking: TrackingNumber[] = [];
+  storedTracking: TrackingNumber[] = [];
 
   constructor(private appRef: ApplicationRef, private log: LogService) { }
 
@@ -26,11 +27,11 @@ export class ListComponent implements OnInit {
     });
   }
 
-  add(tracking: StoredTrackingNumber): void {
+  add(tracking: TrackingNumber): void {
     chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
   }
 
-  remove(tracking: StoredTrackingNumber): void {
+  remove(tracking: TrackingNumber): void {
     chrome.runtime.sendMessage({ command: 'removeTracking', data: [tracking] });
   }
 

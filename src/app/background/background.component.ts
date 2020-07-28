@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { TrackingMatchResult, StoredTrackingNumber, Message } from '../common/types';
-import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity } from 'ramda';
+import { Message } from '../common/types';
+import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path } from 'ramda';
 import axios from 'axios';
-import * as usps from '../../../tracking_number_data/couriers/usps.json';
 import { parse } from 'node-html-parser';
 import { allKeys } from '../common/util';
+import { TrackingNumber } from 'ts-tracking-number';
 
-let foundTracking: StoredTrackingNumber[] = [];
-let storedTracking: StoredTrackingNumber[] = [];
+let foundTracking: TrackingNumber[] = [];
+let storedTracking: TrackingNumber[] = [];
 
 const refreshPopup = () => {
   chrome.tabs.query({ currentWindow: true, active: true}, pipe(head, prop('id'), setIcon));
@@ -17,17 +17,12 @@ const refreshPopup = () => {
   });
 };
 
-const saveTracking = (callback: () => void) => (tracking: StoredTrackingNumber[]) =>
+const saveTracking = (callback: () => void) => (tracking: TrackingNumber[]) =>
   chrome.storage.local.set({ tracking }, callback);
 
-const splitTrackingNumbers = (data: TrackingMatchResult[]) =>
-  data.map(row => row.trackingNumbers.map(
-    trackingNumber => ({ courierCode: row.courierCode, trackingNumber: trackingNumber.replace(/[^a-zA-Z\d]/g, '') })
-  )).flat(Infinity) as StoredTrackingNumber[];
-
-const storeTrackingNumber = (response: StoredTrackingNumber, storedTracking: StoredTrackingNumber[]) => pipe(
+const storeTrackingNumber = (response: TrackingNumber, storedTracking: TrackingNumber[]) => pipe(
   // @ts-ignore
-  unionWith(both(eqBy(prop('courierCode')), eqBy(prop('trackingNumber'))), storedTracking),
+  unionWith(both(eqBy(path(['courier', 'code'])), eqBy(prop('trackingNumber'))), storedTracking),
   saveTracking(() => {
     refreshPopup();
     void refreshTracking();
@@ -35,16 +30,17 @@ const storeTrackingNumber = (response: StoredTrackingNumber, storedTracking: Sto
   // @ts-ignore
 )(response);
 
-const compareTracking = (x: StoredTrackingNumber, y: StoredTrackingNumber): boolean =>
-  x.courierCode === y.courierCode && x.trackingNumber === y.trackingNumber;
+const compareTracking = (x: TrackingNumber, y: TrackingNumber): boolean =>
+  x.courier.code === y.courier.code && x.trackingNumber === y.trackingNumber;
 
 const getTracking = () => ({
   foundTracking: differenceWith(compareTracking, foundTracking, storedTracking),
   storedTracking,
 });
 
-const getTrackingStatus = (tracking: StoredTrackingNumber): Promise<string> => tracking.courierCode === 'usps'
-  ? axios.get(usps.tracking_numbers[0].tracking_url.replace('%s', tracking.trackingNumber))
+// @todo add other cariers now
+const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => tracking.courier.code === 'usps'
+  ? axios.get(tracking.trackingUrl.replace('%s', tracking.trackingNumber))
     .then(prop('data'))
     .then(html => parse(html))
     .then(html => html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString())
@@ -55,12 +51,12 @@ const setIcon = (tabId: number) => chrome.browserAction.setIcon({
   ...tabId && { tabId },
 });
 
-const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response: TrackingMatchResult[]) => {
+const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response: TrackingNumber[]) => {
   foundTracking = [];
 
-  chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
+  chrome.storage.local.get('tracking', ({ tracking }: { tracking: TrackingNumber[] }) => {
     storedTracking = tracking || [];
-    foundTracking = response ? splitTrackingNumbers(response) : [];
+    foundTracking = response || [];
     setIcon(tabId);
   });
 });
@@ -70,8 +66,8 @@ const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response
 const refreshTracking = () => Promise.all(storedTracking.map(t => allKeys({
   trackingNumber: t.trackingNumber,
   status: getTrackingStatus(t),
-  courierCode: t.courierCode,
-}) as Promise<StoredTrackingNumber>))
+  courier: t.courier,
+}) as Promise<TrackingNumber>))
   .then(saveTracking(refreshPopup));
 
 @Component({
@@ -83,7 +79,7 @@ export class BackgroundComponent implements OnInit {
   ngOnInit(): void {
     this.addListeners();
 
-    chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
+    chrome.storage.local.get('tracking', ({ tracking }: { tracking: TrackingNumber[] }) => {
       storedTracking = tracking || [];
       void refreshTracking();
       chrome.alarms.create('updateTracking', { periodInMinutes: 60 });
@@ -105,11 +101,11 @@ export class BackgroundComponent implements OnInit {
           sendResponse(getTracking());
           break;
         case 'saveTracking':
-          storeTrackingNumber(request.data as StoredTrackingNumber, storedTracking);
+          storeTrackingNumber(request.data as TrackingNumber, storedTracking);
           break;
         case 'removeTracking':
           chrome.storage.local.set({
-            tracking: differenceWith(compareTracking, storedTracking, request.data as StoredTrackingNumber[])
+            tracking: differenceWith(compareTracking, storedTracking, request.data as TrackingNumber[])
           });
           break;
       }
@@ -117,7 +113,7 @@ export class BackgroundComponent implements OnInit {
 
     chrome.storage.onChanged.addListener(changes => {
       if (changes.tracking) {
-        storedTracking = changes.tracking.newValue as StoredTrackingNumber[];
+        storedTracking = changes.tracking.newValue as TrackingNumber[];
         refreshPopup();
       }
     });

@@ -4,7 +4,7 @@
     <div *ngFor="let tracking of foundTracking" class="columns is-mobile">
       <div class="column">
         <p class="is-size-7">
-          {{ tracking.courierCode }} {{ tracking.trackingNumber }}
+          {{ tracking.courier.name }} {{ tracking.trackingNumber }}
         </p>
       </div>
       <div class="column"></div>
@@ -25,7 +25,7 @@
     <div *ngFor="let tracking of storedTracking" class="columns is-mobile">
       <div class="column">
         <p class="is-size-7">
-          {{ tracking.courierCode }} {{ tracking.trackingNumber }}
+          {{ tracking.courier.name }} {{ tracking.trackingNumber }}
         </p>
       </div>
       <div class="column">

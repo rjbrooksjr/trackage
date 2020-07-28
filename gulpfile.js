@@ -4,21 +4,25 @@ var exec = require('child_process').exec;
 var browserify = require("browserify");
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
-var uglify = require('gulp-uglify');
 var watch = require('gulp-watch');
 var livereload = require('gulp-livereload');
 var sourcemaps = require('gulp-sourcemaps');
 var plumber = require('gulp-plumber');
 var connect = require('gulp-connect');
 var run = require('gulp-run-command').default;
-
-  var tsify = require("tsify");
+var tsify = require("tsify");
+var terser = require('gulp-terser');
 const { getUnpackedSettings } = require('http2');
+const del = require('del');
+
   gulp.task('ng-build', function(cb) {
       console.log('running ng build...');
       exec('ng build --prod', function (_err, stdout, stderr) {
           console.log(stdout);
           console.log(stderr);
+          if (stderr) {
+            del(['node_modules/@angular/compiler-cli/ngcc/__ngcc_lock_file__']);
+          }
           cb();
           return true;
       });
@@ -36,7 +40,7 @@ const { getUnpackedSettings } = require('http2');
           .pipe(source('content-script.js'))
           .pipe(buffer())
           .pipe(sourcemaps.init({loadMaps: true}))
-          .pipe(uglify())
+          .pipe(terser())
           .pipe(sourcemaps.write('./'))
           .pipe(gulp.dest('./dist'))
           .pipe(connect.reload());
