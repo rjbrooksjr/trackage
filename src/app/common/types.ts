@@ -11,3 +11,7 @@ export type Message = {
   command: string;
   data: TrackingResponse | TrackingNumber[] | TrackingNumber;
 };
+
+export type StoredTrackingNumber = TrackingNumber & {
+  status: string | null;
+};

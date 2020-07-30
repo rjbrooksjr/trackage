@@ -48,5 +48,7 @@ export class ListComponent implements OnInit {
     });
   }
 
-
+  refreshTracking(): void {
+    chrome.runtime.sendMessage({ command: 'refreshTracking' });
+  }
 }

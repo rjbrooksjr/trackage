@@ -1,4 +1,4 @@
-import { findTracking } from 'ts-tracking-number';
+import { findTracking, allCouriers } from 'ts-tracking-number';
 
 const getVisibleText = () => {
   window.getSelection().removeAllRanges();
@@ -14,4 +14,4 @@ const getVisibleText = () => {
 };
 
 chrome.runtime.onMessage.addListener((_request, _sender, sendResponse) =>
-  sendResponse(findTracking(getVisibleText())));
+  sendResponse(findTracking(getVisibleText(), allCouriers.filter(c => c.tracking_numbers.some(n => n.tracking_url)))));

@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Message } from '../common/types';
-import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path } from 'ramda';
+import { Message, StoredTrackingNumber } from '../common/types';
+import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight } from 'ramda';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
-import { allKeys } from '../common/util';
 import { TrackingNumber } from 'ts-tracking-number';
 
 let foundTracking: TrackingNumber[] = [];
-let storedTracking: TrackingNumber[] = [];
+let storedTracking: StoredTrackingNumber[] = [];
 
 const refreshPopup = () => {
   chrome.tabs.query({ currentWindow: true, active: true}, pipe(head, prop('id'), setIcon));
@@ -20,7 +19,7 @@ const refreshPopup = () => {
 const saveTracking = (callback: () => void) => (tracking: TrackingNumber[]) =>
   chrome.storage.local.set({ tracking }, callback);
 
-const storeTrackingNumber = (response: TrackingNumber, storedTracking: TrackingNumber[]) => pipe(
+const storeTrackingNumber = (response: TrackingNumber, storedTracking: StoredTrackingNumber[]) => pipe(
   // @ts-ignore
   unionWith(both(eqBy(path(['courier', 'code'])), eqBy(prop('trackingNumber'))), storedTracking),
   saveTracking(() => {
@@ -44,7 +43,7 @@ const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => trackin
     .then(prop('data'))
     .then(html => parse(html))
     .then(html => html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString())
-  : Promise.resolve('');
+  : Promise.resolve('n/a');
 
 const setIcon = (tabId: number) => chrome.browserAction.setIcon({
   path: getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
@@ -54,7 +53,7 @@ const setIcon = (tabId: number) => chrome.browserAction.setIcon({
 const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response: TrackingNumber[]) => {
   foundTracking = [];
 
-  chrome.storage.local.get('tracking', ({ tracking }: { tracking: TrackingNumber[] }) => {
+  chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
     storedTracking = tracking || [];
     foundTracking = response || [];
     setIcon(tabId);
@@ -62,12 +61,8 @@ const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response
 });
 
 // @todo Don't check delivered packages
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-const refreshTracking = () => Promise.all(storedTracking.map(t => allKeys({
-  trackingNumber: t.trackingNumber,
-  status: getTrackingStatus(t),
-  courier: t.courier,
-}) as Promise<TrackingNumber>))
+const refreshTracking = () => Promise.all(storedTracking.map(getTrackingStatus))
+  .then(statuses => storedTracking.map((t, i) => mergeRight(t, { status: statuses[i]})))
   .then(saveTracking(refreshPopup));
 
 @Component({
@@ -79,7 +74,7 @@ export class BackgroundComponent implements OnInit {
   ngOnInit(): void {
     this.addListeners();
 
-    chrome.storage.local.get('tracking', ({ tracking }: { tracking: TrackingNumber[] }) => {
+    chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
       storedTracking = tracking || [];
       void refreshTracking();
       chrome.alarms.create('updateTracking', { periodInMinutes: 60 });
@@ -108,12 +103,16 @@ export class BackgroundComponent implements OnInit {
             tracking: differenceWith(compareTracking, storedTracking, request.data as TrackingNumber[])
           });
           break;
+        case 'refreshTracking':
+          console.log('REFRESHING');
+          void refreshTracking();
+          break;
       }
     });
 
     chrome.storage.onChanged.addListener(changes => {
       if (changes.tracking) {
-        storedTracking = changes.tracking.newValue as TrackingNumber[];
+        storedTracking = changes.tracking.newValue as StoredTrackingNumber[];
         refreshPopup();
       }
     });
