@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Message, StoredTrackingNumber } from '../common/types';
-import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight } from 'ramda';
+import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight, pathOr } from 'ramda';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
 import { TrackingNumber } from 'ts-tracking-number';
@@ -37,12 +37,44 @@ const getTracking = () => ({
   storedTracking,
 });
 
+const getTrackingHtml = (tracking: TrackingNumber): Promise<HTMLElement & { valid: boolean; }> =>
+  axios.get(tracking.trackingUrl.replace('%s', tracking.trackingNumber))
+    .then(prop('data'))
+    .then(html => parse(html)) as Promise<HTMLElement & { valid: boolean; }>;
+
+const buildFedexData = (trackingNumber: string): string => encodeURI(`data={
+    "TrackPackagesRequest":{
+      "appType":"WTRK",
+      "appDeviceType":"DESKTOP",
+      "supportHTML":false,
+      "supportCurrentLocation":true,
+      "uniqueKey":"",
+      "processingParameters":{},
+      "trackingInfoList":[
+        {"trackNumberInfo":{"trackingNumber":"${trackingNumber}","trackingQualifier":"","trackingCarrier":""}}
+      ]
+    }
+  }
+  &action=trackpackages
+  &locale=en_US
+  &version=1
+  &format=json
+`);
+
 // @todo add other cariers now
 const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => tracking.courier.code === 'usps'
-  ? axios.get(tracking.trackingUrl.replace('%s', tracking.trackingNumber))
-    .then(prop('data'))
-    .then(html => parse(html))
+  ? getTrackingHtml(tracking)
     .then(html => html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString())
+  : tracking.courier.code ==='fedex'
+  ? axios.post('https://www.fedex.com/trackingCal/track', buildFedexData(tracking.trackingNumber))
+    .then(pathOr('n/a', ['data', 'TrackPackagesResponse', 'packageList', 0, 'keyStatus']))
+  : tracking.courier.code === 'ups'
+  ? axios.post('https://wwwapps.ups.com/track/api/Track/GetStatus?loc=en_US', {
+    Locale: 'en_US',
+    Requester: 'st/trackdetails',
+    TrackingNumber: ['1z30971f0321207279']
+  })
+    .then(pathOr('', ['data', 'trackDetails', 0, 'packageStatus']))
   : Promise.resolve('n/a');
 
 const setIcon = (tabId: number) => chrome.browserAction.setIcon({
@@ -87,6 +119,18 @@ export class BackgroundComponent implements OnInit {
         tabs[0] && checkTab(tabs[0].id)
       )
     );
+
+    chrome.webRequest.onCompleted.addListener(
+      ({ tabId }) => chrome.tabs.query({ active: true, currentWindow: true, }, tabs =>
+        tabs[0] && tabs[0].id === tabId && checkTab(tabId)),
+      {urls: ['<all_urls>']},
+      [],
+    );
+
+    // chrome.webRequest.onCompleted.addListener(({ tabId }) => checkTab(tabId), {urls: ['<all_urls>']}, []);
+    // chrome.webRequest.onCompleted.addListener(foo => {
+    //   console.log('WEBR', foo);
+    // });
 
     chrome.tabs.onActivated.addListener(({ tabId }) => checkTab(tabId));
 

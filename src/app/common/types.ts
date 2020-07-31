@@ -4,7 +4,7 @@ import { TrackingNumber } from 'ts-tracking-number';
 
 export type TrackingResponse = {
   foundTracking: TrackingNumber[];
-  storedTracking: TrackingNumber[];
+  storedTracking: StoredTrackingNumber[];
 }
 
 export type Message = {

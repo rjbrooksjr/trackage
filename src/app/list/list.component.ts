@@ -1,7 +1,8 @@
 import { Component, OnInit, ApplicationRef } from '@angular/core';
-import { Message, TrackingResponse } from '../common/types';
+import { Message, TrackingResponse, StoredTrackingNumber } from '../common/types';
 import { LogService } from '../services/log.service';
 import { TrackingNumber } from 'ts-tracking-number';
+import { evolve, always } from 'ramda';
 
 @Component({
   selector: 'app-list',
@@ -10,7 +11,7 @@ import { TrackingNumber } from 'ts-tracking-number';
 })
 export class ListComponent implements OnInit {
   foundTracking: TrackingNumber[] = [];
-  storedTracking: TrackingNumber[] = [];
+  storedTracking: StoredTrackingNumber[] = [];
 
   constructor(private appRef: ApplicationRef, private log: LogService) { }
 
@@ -49,6 +50,8 @@ export class ListComponent implements OnInit {
   }
 
   refreshTracking(): void {
+    this.storedTracking = this.storedTracking.map(evolve({ status: always(null) }));
+    this.appRef.tick();
     chrome.runtime.sendMessage({ command: 'refreshTracking' });
   }
 }
