@@ -61,7 +61,7 @@ const buildFedexData = (trackingNumber: string): string => encodeURI(`data={
   &format=json
 `);
 
-// @todo add other cariers now
+// @todo DHL, OnTrac
 const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => tracking.courier.code === 'usps'
   ? getTrackingHtml(tracking)
     .then(html => html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString())
@@ -82,7 +82,7 @@ const setIcon = (tabId: number) => chrome.browserAction.setIcon({
   ...tabId && { tabId },
 });
 
-const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response: TrackingNumber[]) => {
+const receiveFoundTracking = (response: TrackingNumber[], tabId) => {
   foundTracking = [];
 
   chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
@@ -90,7 +90,12 @@ const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response
     foundTracking = response || [];
     setIcon(tabId);
   });
-});
+};
+
+const checkTab = (tabId: number) => chrome.tabs.sendMessage(
+  tabId, {},
+  response => receiveFoundTracking(response, tabId)
+);
 
 // @todo Don't check delivered packages
 const refreshTracking = () => Promise.all(storedTracking.map(getTrackingStatus))
@@ -114,23 +119,11 @@ export class BackgroundComponent implements OnInit {
   }
 
   addListeners(): void {
-    chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => changeInfo.status === 'complete' && tab.active &&
-      chrome.tabs.query({ active: true, currentWindow: true, }, tabs =>
-        tabs[0] && checkTab(tabs[0].id)
-      )
+    chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) =>
+      changeInfo.status === 'complete' && tab.active
+        ? chrome.tabs.query({ active: true }, tabs => tabs[0] && checkTab(tabs[0].id))
+        : identity
     );
-
-    chrome.webRequest.onCompleted.addListener(
-      ({ tabId }) => chrome.tabs.query({ active: true, currentWindow: true, }, tabs =>
-        tabs[0] && tabs[0].id === tabId && checkTab(tabId)),
-      {urls: ['<all_urls>']},
-      [],
-    );
-
-    // chrome.webRequest.onCompleted.addListener(({ tabId }) => checkTab(tabId), {urls: ['<all_urls>']}, []);
-    // chrome.webRequest.onCompleted.addListener(foo => {
-    //   console.log('WEBR', foo);
-    // });
 
     chrome.tabs.onActivated.addListener(({ tabId }) => checkTab(tabId));
 
@@ -148,8 +141,14 @@ export class BackgroundComponent implements OnInit {
           });
           break;
         case 'refreshTracking':
-          console.log('REFRESHING');
           void refreshTracking();
+          break;
+        case 'foundTracking':
+          chrome.tabs.query({ active: true }, tabs =>
+            tabs[0]?.id === sender.tab.id
+              ? receiveFoundTracking(request.data as TrackingNumber[], sender.tab.id)
+              : identity
+          );
           break;
       }
     });
