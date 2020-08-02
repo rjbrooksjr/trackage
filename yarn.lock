@@ -11351,10 +11351,10 @@ ts-toolbelt@^6.3.3:
   resolved "https://registry.yarnpkg.com/ts-toolbelt/-/ts-toolbelt-6.13.34.tgz#3bd6e1e333a75c5ddab584d293f35494cb8c9222"
   integrity sha512-ikZwSUPO+fW+OUnyER1KCG58khTi51Di3+iVdhkK7UshqkL0Ir749B2TQ44o/khkKvDSOMzF8NuVkQLycDXnsg==
 
-ts-tracking-number@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/ts-tracking-number/-/ts-tracking-number-1.0.8.tgz#8f0728bda1bb645089e30ae24c1305d37e17bb1c"
-  integrity sha512-VgspSFMIEpOV+f3bBGo6ZhSs0IlJX6nUN+KRqgzjq3fi0NxBxmYjbhBk92wk69/hm85GHDcFcIhJhmPOD6M+ZA==
+ts-tracking-number@^1.0.10:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/ts-tracking-number/-/ts-tracking-number-1.0.10.tgz#04fc6d02f220bd5072671b419d370433e7cc564b"
+  integrity sha512-GFl62wRGKuI47Qo2wpIbkfr3hUzMhvlf7VjC0IhgbZ664BroeZ7NHjVtL9Rbu1jNQWi4RMwz5vZa0AZ2Kvc+/g==
   dependencies:
     ramda "^0.27.0"
 

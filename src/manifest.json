@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Test Extension",
   "version": "1.0.0",
-  "permissions": [ "activeTab", "alarms", "storage" ],
+  "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>" ],
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
@@ -12,7 +12,7 @@
   ],
   "background": {
     "page": "index.html#/background",
-    "persistent": false
+    "persistent": true
   },
   "browser_action": {
     "default_title": "List Tracking",

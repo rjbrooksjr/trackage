@@ -3,3 +3,7 @@
 $section-padding: 1rem .75rem;
 
 @import "../node_modules/bulma/bulma.sass";
+
+body {
+  width: 450px;
+}

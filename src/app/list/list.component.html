@@ -1,47 +1,66 @@
-<div *ngIf="foundTracking.length" class="section">
-  <h2>Found Tracking Numbers</h2>
-  <div class="container">
-    <div *ngFor="let tracking of foundTracking" class="columns is-mobile">
-      <div class="column">
-        <p class="is-size-7">
-          {{ tracking.courier.name }} {{ tracking.trackingNumber }}
-        </p>
-      </div>
-      <div class="column"></div>
-      <div class="column">
-        <button (click)="add(tracking)" class="button is-small">
+<nav class="navbar">
+  <div class="navbar-end">
+    <div class="navbar-item">
+      <div class="buttons">
+        <button (click)="refreshTracking()" class="button is-small">
           <span class="icon is-small">
-            <i class="fas fa-plus"></i>
+            <i class="fas fa-sync"></i>
           </span>
         </button>
       </div>
     </div>
   </div>
+</nav>
+
+<div *ngIf="foundTracking.length" class="section">
+  <h2>Found Tracking Numbers</h2>
+  <table class="table is-fullwidth">
+    <tbody>
+      <tr *ngFor="let tracking of foundTracking">
+        <td>
+          <p class="is-size-7">
+            {{ tracking.courier.name }}<br>
+            {{ tracking.trackingNumber }}
+          </p>
+        </td>
+        <td>
+          <button (click)="add(tracking)" class="button is-small">
+            <span class="icon is-small">
+              <i class="fas fa-plus"></i>
+            </span>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <div class="section">
   <h2>Saved Tracking Numbers</h2>
   <div *ngIf="storedTracking.length; else nothingStored" class="container">
-    <div *ngFor="let tracking of storedTracking" class="columns is-mobile">
-      <div class="column">
-        <p class="is-size-7">
-          {{ tracking.courier.name }} {{ tracking.trackingNumber }}
-        </p>
-      </div>
-      <div class="column">
-        <p class="is-size-7">
-          <span *ngIf="tracking.status; else statusLoading">{{ tracking.status }}</span>
-          <ng-template #statusLoading><i class="fa fa-spinner fa-pulse fa-fw"></i></ng-template>
-        </p>
-      </div>
-      <div class="column">
-        <button (click)="remove(tracking)" class="button is-small">
-          <span class="icon is-small">
-            <i class="fas fa-trash"></i>
-          </span>
-        </button>
-      </div>
-    </div>
+    <table class="table is-fullwidth">
+      <tr *ngFor="let tracking of storedTracking">
+        <td>
+          <p class="is-size-7">
+            {{ tracking.courier.name }}<br>
+            {{ tracking.trackingNumber }}
+          </p>
+        </td>
+        <td>
+          <p class="is-size-7">
+            <span *ngIf="tracking.status; else statusLoading">{{ tracking.status }}</span>
+            <ng-template #statusLoading><i class="fa fa-spinner fa-pulse fa-fw"></i></ng-template>
+          </p>
+        </td>
+        <td>
+          <button (click)="remove(tracking)" class="button is-small">
+            <span class="icon is-small">
+              <i class="fas fa-trash"></i>
+            </span>
+          </button>
+        </td>
+      </tr>
+    </table>
   </div>
   <ng-template #nothingStored><div class="container"><p class="is-size-7">None Yet</p></div></ng-template>
 </div>

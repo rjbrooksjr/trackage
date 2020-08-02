@@ -1,17 +1,28 @@
-import { findTracking } from 'ts-tracking-number';
+import { findTracking, allCouriers } from 'ts-tracking-number';
 
-const getVisibleText = () => {
-  window.getSelection().removeAllRanges();
+let lastBody = '';
 
-  const range = document.createRange();
-  range.selectNode(document.body);
-  window.getSelection().addRange(range);
+const textChanged = (): boolean => {
+  if (lastBody !== document.body.innerText) {
+    lastBody = document.body.innerText;
+    return true;
+  }
 
-  const visibleText = window.getSelection().toString().trim();
-  window.getSelection().removeAllRanges();
-
-  return visibleText;
+  return false;
 };
 
-chrome.runtime.onMessage.addListener((_request, _sender, sendResponse) =>
-  sendResponse(findTracking(getVisibleText())));
+chrome.runtime.onMessage.addListener((_request, _sender, sendResponse) => {
+  sendResponse(findTracking(document.body.innerText, allCouriers));
+});
+
+const observer = new MutationObserver(() =>
+  textChanged()
+    ? chrome.runtime.sendMessage({
+      command: 'foundTracking',
+      data: findTracking(document.body.innerText)
+    })
+    : () => { /* nothing */ }
+);
+
+window.addEventListener('load', () =>
+  observer.observe(document.getElementsByTagName('body')[0], { childList: true, subtree: true }));

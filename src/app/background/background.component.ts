@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Message } from '../common/types';
-import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path } from 'ramda';
+import { Message, StoredTrackingNumber } from '../common/types';
+import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight, pathOr } from 'ramda';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
-import { allKeys } from '../common/util';
 import { TrackingNumber } from 'ts-tracking-number';
 
 let foundTracking: TrackingNumber[] = [];
-let storedTracking: TrackingNumber[] = [];
+let storedTracking: StoredTrackingNumber[] = [];
 
 const refreshPopup = () => {
   chrome.tabs.query({ currentWindow: true, active: true}, pipe(head, prop('id'), setIcon));
@@ -20,7 +19,7 @@ const refreshPopup = () => {
 const saveTracking = (callback: () => void) => (tracking: TrackingNumber[]) =>
   chrome.storage.local.set({ tracking }, callback);
 
-const storeTrackingNumber = (response: TrackingNumber, storedTracking: TrackingNumber[]) => pipe(
+const storeTrackingNumber = (response: TrackingNumber, storedTracking: StoredTrackingNumber[]) => pipe(
   // @ts-ignore
   unionWith(both(eqBy(path(['courier', 'code'])), eqBy(prop('trackingNumber'))), storedTracking),
   saveTracking(() => {
@@ -38,36 +37,69 @@ const getTracking = () => ({
   storedTracking,
 });
 
-// @todo add other cariers now
-const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => tracking.courier.code === 'usps'
-  ? axios.get(tracking.trackingUrl.replace('%s', tracking.trackingNumber))
+const getTrackingHtml = (tracking: TrackingNumber): Promise<HTMLElement & { valid: boolean; }> =>
+  axios.get(tracking.trackingUrl.replace('%s', tracking.trackingNumber))
     .then(prop('data'))
-    .then(html => parse(html))
+    .then(html => parse(html)) as Promise<HTMLElement & { valid: boolean; }>;
+
+const buildFedexData = (trackingNumber: string): string => encodeURI(`data={
+    "TrackPackagesRequest":{
+      "appType":"WTRK",
+      "appDeviceType":"DESKTOP",
+      "supportHTML":false,
+      "supportCurrentLocation":true,
+      "uniqueKey":"",
+      "processingParameters":{},
+      "trackingInfoList":[
+        {"trackNumberInfo":{"trackingNumber":"${trackingNumber}","trackingQualifier":"","trackingCarrier":""}}
+      ]
+    }
+  }
+  &action=trackpackages
+  &locale=en_US
+  &version=1
+  &format=json
+`);
+
+// @todo DHL, OnTrac
+const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => tracking.courier.code === 'usps'
+  ? getTrackingHtml(tracking)
     .then(html => html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString())
-  : Promise.resolve('');
+  : tracking.courier.code ==='fedex'
+  ? axios.post('https://www.fedex.com/trackingCal/track', buildFedexData(tracking.trackingNumber))
+    .then(pathOr('n/a', ['data', 'TrackPackagesResponse', 'packageList', 0, 'keyStatus']))
+  : tracking.courier.code === 'ups'
+  ? axios.post('https://wwwapps.ups.com/track/api/Track/GetStatus?loc=en_US', {
+    Locale: 'en_US',
+    Requester: 'st/trackdetails',
+    TrackingNumber: [tracking.trackingNumber]
+  })
+    .then(pathOr('', ['data', 'trackDetails', 0, 'packageStatus']))
+  : Promise.resolve('n/a');
 
 const setIcon = (tabId: number) => chrome.browserAction.setIcon({
   path: getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
   ...tabId && { tabId },
 });
 
-const checkTab = (tabId: number) => chrome.tabs.sendMessage(tabId, {}, (response: TrackingNumber[]) => {
+const receiveFoundTracking = (response: TrackingNumber[], tabId) => {
   foundTracking = [];
 
-  chrome.storage.local.get('tracking', ({ tracking }: { tracking: TrackingNumber[] }) => {
+  chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
     storedTracking = tracking || [];
     foundTracking = response || [];
     setIcon(tabId);
   });
-});
+};
+
+const checkTab = (tabId: number) => chrome.tabs.sendMessage(
+  tabId, {},
+  response => receiveFoundTracking(response, tabId)
+);
 
 // @todo Don't check delivered packages
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-const refreshTracking = () => Promise.all(storedTracking.map(t => allKeys({
-  trackingNumber: t.trackingNumber,
-  status: getTrackingStatus(t),
-  courier: t.courier,
-}) as Promise<TrackingNumber>))
+const refreshTracking = () => Promise.all(storedTracking.map(getTrackingStatus))
+  .then(statuses => storedTracking.map((t, i) => mergeRight(t, { status: statuses[i]})))
   .then(saveTracking(refreshPopup));
 
 @Component({
@@ -79,7 +111,7 @@ export class BackgroundComponent implements OnInit {
   ngOnInit(): void {
     this.addListeners();
 
-    chrome.storage.local.get('tracking', ({ tracking }: { tracking: TrackingNumber[] }) => {
+    chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
       storedTracking = tracking || [];
       void refreshTracking();
       chrome.alarms.create('updateTracking', { periodInMinutes: 60 });
@@ -87,10 +119,10 @@ export class BackgroundComponent implements OnInit {
   }
 
   addListeners(): void {
-    chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => changeInfo.status === 'complete' && tab.active &&
-      chrome.tabs.query({ active: true, currentWindow: true, }, tabs =>
-        tabs[0] && checkTab(tabs[0].id)
-      )
+    chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) =>
+      changeInfo.status === 'complete' && tab.active
+        ? chrome.tabs.query({ active: true }, tabs => tabs[0] && checkTab(tabs[0].id))
+        : identity
     );
 
     chrome.tabs.onActivated.addListener(({ tabId }) => checkTab(tabId));
@@ -108,12 +140,22 @@ export class BackgroundComponent implements OnInit {
             tracking: differenceWith(compareTracking, storedTracking, request.data as TrackingNumber[])
           });
           break;
+        case 'refreshTracking':
+          void refreshTracking();
+          break;
+        case 'foundTracking':
+          chrome.tabs.query({ active: true }, tabs =>
+            tabs[0]?.id === sender.tab.id
+              ? receiveFoundTracking(request.data as TrackingNumber[], sender.tab.id)
+              : identity
+          );
+          break;
       }
     });
 
     chrome.storage.onChanged.addListener(changes => {
       if (changes.tracking) {
-        storedTracking = changes.tracking.newValue as TrackingNumber[];
+        storedTracking = changes.tracking.newValue as StoredTrackingNumber[];
         refreshPopup();
       }
     });
