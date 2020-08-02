@@ -72,7 +72,7 @@ const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => trackin
   ? axios.post('https://wwwapps.ups.com/track/api/Track/GetStatus?loc=en_US', {
     Locale: 'en_US',
     Requester: 'st/trackdetails',
-    TrackingNumber: ['1z30971f0321207279']
+    TrackingNumber: [tracking.trackingNumber]
   })
     .then(pathOr('', ['data', 'trackDetails', 0, 'packageStatus']))
   : Promise.resolve('n/a');
