@@ -43,7 +43,10 @@
         <td>
           <p class="is-size-7">
             {{ tracking.courier.name }}<br>
-            {{ tracking.trackingNumber }}
+            <a *ngIf="tracking.trackingUrl; else noTrackingUrl" (click)="visit(tracking)">
+              {{ tracking.trackingNumber }}
+            </a>
+            <ng-template #noTrackingUrl>{{ tracking.trackingNumber }}</ng-template>
           </p>
         </td>
         <td>

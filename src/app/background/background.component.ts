@@ -150,6 +150,12 @@ export class BackgroundComponent implements OnInit {
               : identity
           );
           break;
+        case 'visitTracking':
+          chrome.tabs.create({
+            url: (request.data as TrackingNumber).trackingUrl
+              .replace('%s', (request.data as TrackingNumber).trackingNumber)
+          });
+          break;
       }
     });
 

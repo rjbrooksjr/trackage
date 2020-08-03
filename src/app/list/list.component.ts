@@ -54,4 +54,8 @@ export class ListComponent implements OnInit {
     this.appRef.tick();
     chrome.runtime.sendMessage({ command: 'refreshTracking' });
   }
+
+  visit(tracking: TrackingNumber): void {
+    chrome.runtime.sendMessage({ command: 'visitTracking', data: tracking });
+  }
 }
