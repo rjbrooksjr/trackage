@@ -1,0 +1,9 @@
+<button
+  (click)="!confirm ? confirmDelete() : delete()"
+  class="button is-small has-tooltip-active has-tooltip-arrow"
+  [attr.data-tooltip]="confirm ? 'Click again to confirm' : undefined"
+>
+  <span class="icon is-small">
+    <i class="fas" [ngClass]="{'fa-trash': !confirm, 'fa-check': confirm }"></i>
+  </span>
+</button>
