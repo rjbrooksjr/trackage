@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Message, StoredTrackingNumber } from '../common/types';
-import { unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight, pathOr } from 'ramda';
+import {
+  unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight, pathOr, concat, complement,
+  test, propOr
+} from 'ramda';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
 import { TrackingNumber } from 'ts-tracking-number';
@@ -97,9 +100,11 @@ const checkTab = (tabId: number) => chrome.tabs.sendMessage(
   response => receiveFoundTracking(response, tabId)
 );
 
-// @todo Don't check delivered packages
-const refreshTracking = () => Promise.all(storedTracking.map(getTrackingStatus))
-  .then(statuses => storedTracking.map((t, i) => mergeRight(t, { status: statuses[i]})))
+const isDelivered = pipe(propOr('', 'status'), test(/delivered/i));
+
+const refreshTracking = () => Promise.all(storedTracking.filter(complement(isDelivered)).map(getTrackingStatus))
+  .then(statuses => storedTracking.filter(complement(isDelivered)).map((t, i) => mergeRight(t, { status: statuses[i]})))
+  .then(concat(storedTracking.filter(isDelivered)))
   .then(saveTracking(refreshPopup));
 
 @Component({
