@@ -1,5 +1,4 @@
 var gulp = require('gulp');
-var ts = require('gulp-typescript');
 var exec = require('child_process').exec;
 var browserify = require("browserify");
 var source = require('vinyl-source-stream');
@@ -12,7 +11,6 @@ var connect = require('gulp-connect');
 var run = require('gulp-run-command').default;
 var tsify = require("tsify");
 var terser = require('gulp-terser');
-const { getUnpackedSettings } = require('http2');
 const del = require('del');
 
   gulp.task('ng-build', function(cb) {
@@ -38,6 +36,24 @@ const del = require('del');
           .bundle()
           .pipe(plumber())
           .pipe(source('content-script.js'))
+          .pipe(buffer())
+          .pipe(sourcemaps.init({loadMaps: true}))
+          .pipe(terser())
+          .pipe(sourcemaps.write('./'))
+          .pipe(gulp.dest('./dist'))
+          .pipe(connect.reload());
+  });
+
+  gulp.task('background', function() {
+      return browserify({
+              basedir: '.',
+              debug: true,
+              entries: 'src/app/background.ts'
+          })
+          .plugin(tsify)
+          .bundle()
+          .pipe(plumber())
+          .pipe(source('background.js'))
           .pipe(buffer())
           .pipe(sourcemaps.init({loadMaps: true}))
           .pipe(terser())
@@ -73,4 +89,4 @@ const del = require('del');
   // todo how can we kill content script?
   gulp.task('clean', run('/usr/bin/pkill -f "ng build"', { ignoreErrors: true }));
 
-gulp.task('default', gulp.series('clean', gulp.parallel('ng-build', 'content-script')));
+gulp.task('default', gulp.series('clean', gulp.parallel('ng-build', 'content-script', 'background')));

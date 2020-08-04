@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { Message, StoredTrackingNumber } from '../common/types';
+import { Message, StoredTrackingNumber } from './common/types';
 import {
   unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight, pathOr, concat, complement,
   test, propOr
@@ -107,70 +106,58 @@ const refreshTracking = () => Promise.all(storedTracking.filter(complement(isDel
   .then(concat(storedTracking.filter(isDelivered)))
   .then(saveTracking(refreshPopup));
 
-@Component({
-  selector: 'app-background',
-  templateUrl: './background.component.html',
-  styleUrls: ['./background.component.scss']
-})
-export class BackgroundComponent implements OnInit {
-  ngOnInit(): void {
-    this.addListeners();
 
-    chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
-      storedTracking = tracking || [];
+chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
+  storedTracking = tracking || [];
+  void refreshTracking();
+  chrome.alarms.create('updateTracking', { periodInMinutes: 60 });
+});
+
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) =>
+  changeInfo.status === 'complete' && tab.active
+    ? chrome.tabs.query({ active: true }, tabs => tabs[0] && checkTab(tabs[0].id))
+    : identity
+);
+
+chrome.tabs.onActivated.addListener(({ tabId }) => checkTab(tabId));
+
+chrome.runtime.onMessage.addListener((request: Message, sender, sendResponse) => {
+  switch (request.command) {
+    case 'getTracking':
+      sendResponse(getTracking());
+      break;
+    case 'saveTracking':
+      storeTrackingNumber(request.data as TrackingNumber, storedTracking);
+      break;
+    case 'removeTracking':
+      chrome.storage.local.set({
+        tracking: differenceWith(compareTracking, storedTracking, request.data as TrackingNumber[])
+      });
+      break;
+    case 'refreshTracking':
       void refreshTracking();
-      chrome.alarms.create('updateTracking', { periodInMinutes: 60 });
-    });
+      break;
+    case 'foundTracking':
+      chrome.tabs.query({ active: true }, tabs =>
+        tabs[0]?.id === sender.tab.id
+          ? receiveFoundTracking(request.data as TrackingNumber[], sender.tab.id)
+          : identity
+      );
+      break;
+    case 'visitTracking':
+      chrome.tabs.create({
+        url: (request.data as TrackingNumber).trackingUrl
+          .replace('%s', (request.data as TrackingNumber).trackingNumber)
+      });
+      break;
   }
+});
 
-  addListeners(): void {
-    chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) =>
-      changeInfo.status === 'complete' && tab.active
-        ? chrome.tabs.query({ active: true }, tabs => tabs[0] && checkTab(tabs[0].id))
-        : identity
-    );
-
-    chrome.tabs.onActivated.addListener(({ tabId }) => checkTab(tabId));
-
-    chrome.runtime.onMessage.addListener((request: Message, sender, sendResponse) => {
-      switch (request.command) {
-        case 'getTracking':
-          sendResponse(getTracking());
-          break;
-        case 'saveTracking':
-          storeTrackingNumber(request.data as TrackingNumber, storedTracking);
-          break;
-        case 'removeTracking':
-          chrome.storage.local.set({
-            tracking: differenceWith(compareTracking, storedTracking, request.data as TrackingNumber[])
-          });
-          break;
-        case 'refreshTracking':
-          void refreshTracking();
-          break;
-        case 'foundTracking':
-          chrome.tabs.query({ active: true }, tabs =>
-            tabs[0]?.id === sender.tab.id
-              ? receiveFoundTracking(request.data as TrackingNumber[], sender.tab.id)
-              : identity
-          );
-          break;
-        case 'visitTracking':
-          chrome.tabs.create({
-            url: (request.data as TrackingNumber).trackingUrl
-              .replace('%s', (request.data as TrackingNumber).trackingNumber)
-          });
-          break;
-      }
-    });
-
-    chrome.storage.onChanged.addListener(changes => {
-      if (changes.tracking) {
-        storedTracking = changes.tracking.newValue as StoredTrackingNumber[];
-        refreshPopup();
-      }
-    });
-
-    chrome.alarms.onAlarm.addListener(alarm => alarm.name === 'updateTracking' ? void refreshTracking() : identity);
+chrome.storage.onChanged.addListener(changes => {
+  if (changes.tracking) {
+    storedTracking = changes.tracking.newValue as StoredTrackingNumber[];
+    refreshPopup();
   }
-}
+});
+
+chrome.alarms.onAlarm.addListener(alarm => alarm.name === 'updateTracking' ? void refreshTracking() : identity);
