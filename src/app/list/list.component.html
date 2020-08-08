@@ -56,6 +56,11 @@
           </p>
         </td>
         <td>
+          <button (click)="edit(tracking)" class="button is-small">
+            <span class="icon is-small">
+              <i class="fas fa-edit"></i>
+            </span>
+          </button>
           <delete-confirm [tracking]="tracking" (confirmed)="remove($event)"></delete-confirm>
         </td>
       </tr>
@@ -63,3 +68,5 @@
   </div>
   <ng-template #nothingStored><div class="container"><p class="is-size-7">None Yet</p></div></ng-template>
 </div>
+
+<tracking-edit *ngIf="editing" [tracking]="editing" (done)="doneEditing()"></tracking-edit>

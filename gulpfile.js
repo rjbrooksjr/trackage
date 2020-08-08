@@ -48,7 +48,7 @@ const del = require('del');
       return browserify({
               basedir: '.',
               debug: true,
-              entries: 'src/app/background.ts'
+              entries: 'src/background/index.ts'
           })
           .plugin(tsify)
           .bundle()

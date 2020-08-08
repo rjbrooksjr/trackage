@@ -8,6 +8,7 @@
   },
   "include": [
     "src/content-script",
+    "src/background",
     "src/app",
     "src/*.ts",
     "src/manifest.json",

@@ -13,6 +13,7 @@
     "src/**/*.spec.ts",
     "src/app/environments/environment.prod.ts",
     "src/content-script/*",
+    "src/background/*",
     "src/test.ts",
   ]
 }

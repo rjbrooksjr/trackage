@@ -12,6 +12,7 @@ import { evolve, always } from 'ramda';
 export class ListComponent implements OnInit {
   foundTracking: TrackingNumber[] = [];
   storedTracking: StoredTrackingNumber[] = [];
+  editing: StoredTrackingNumber = null;
 
   constructor(private appRef: ApplicationRef, private log: LogService) { }
 
@@ -30,6 +31,16 @@ export class ListComponent implements OnInit {
 
   add(tracking: TrackingNumber): void {
     chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
+  }
+
+  edit(tracking: StoredTrackingNumber): void {
+    this.editing = tracking;
+    this.appRef.tick();
+  }
+
+  doneEditing(): void {
+    this.editing = null;
+    this.appRef.tick();
   }
 
   remove(tracking: TrackingNumber): void {

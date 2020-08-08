@@ -1,10 +1,13 @@
 @charset "utf-8";
 
 $section-padding: 1rem .75rem;
+$modal-card-head-padding: 10px;
+$modal-card-body-padding: 10px;
 
 @import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@creativebulma/bulma-tooltip/src/sass/index.sass";
 
 body {
   width: 450px;
+  min-height: 300px;
 }

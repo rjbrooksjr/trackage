@@ -1,4 +1,4 @@
-import { Message, StoredTrackingNumber } from './common/types';
+import { Message, StoredTrackingNumber } from '../app/common/types';
 import {
   unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight, pathOr, concat, complement,
   test, propOr
