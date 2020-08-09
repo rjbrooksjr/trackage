@@ -7,11 +7,21 @@ export type TrackingResponse = {
   storedTracking: StoredTrackingNumber[];
 }
 
+export type EditTrackingData = {
+  trackingNumber: string;
+  editTracking: EditForm;
+}
+
 export type Message = {
   command: string;
-  data: TrackingResponse | TrackingNumber[] | TrackingNumber;
+  data: TrackingResponse | TrackingNumber[] | TrackingNumber | EditForm;
 };
 
 export type StoredTrackingNumber = TrackingNumber & {
-  status: string | null;
+  status?: string;
+  label?: string;
+};
+
+export type EditForm = {
+  label?: string;
 };

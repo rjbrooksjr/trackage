@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { StoredTrackingNumber } from '../common/types';
+import { StoredTrackingNumber, EditForm } from '../common/types';
 import { LogService } from '../services/log.service';
 
 @Component({
@@ -14,13 +14,11 @@ export class TrackingEditComponent implements OnInit {
 
   editForm;
 
-  constructor(private formBuilder: FormBuilder, private logService: LogService) {
-
-  }
+  constructor(private formBuilder: FormBuilder, private logService: LogService) { }
 
   ngOnInit(): void {
     this.editForm = this.formBuilder.group({
-      name: this.tracking.trackingNumber,
+      label: this.tracking.label,
     });
   }
 
@@ -28,9 +26,11 @@ export class TrackingEditComponent implements OnInit {
     this.done.emit(true);
   }
 
-  saveTracking(saveData): void {
-    console.log('savingggg', saveData);
-    this.logService.background('saving', saveData);
+  saveTracking(saveData: EditForm): void {
+    chrome.runtime.sendMessage({
+      command: 'editTracking',
+      data: { trackingNumber: this.tracking.trackingNumber, editTracking: saveData }
+    }, () => this.done.emit(true));
   }
 
 }

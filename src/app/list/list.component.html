@@ -44,7 +44,7 @@
           <p class="is-size-7">
             {{ tracking.courier.name }}<br>
             <a *ngIf="tracking.trackingUrl; else noTrackingUrl" (click)="visit(tracking)">
-              {{ tracking.trackingNumber }}
+              {{ tracking.label || tracking.trackingNumber }}
             </a>
             <ng-template #noTrackingUrl>{{ tracking.trackingNumber }}</ng-template>
           </p>

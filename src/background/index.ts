@@ -1,7 +1,7 @@
-import { Message, StoredTrackingNumber } from '../app/common/types';
+import { Message, StoredTrackingNumber, EditForm, EditTrackingData } from '../app/common/types';
 import {
   unionWith, both, eqBy, prop, pipe, differenceWith, head, identity, path, mergeRight, pathOr, concat, complement,
-  test, propOr
+  test, propOr, whereEq, mergeLeft, map, when
 } from 'ramda';
 import axios from 'axios';
 import { parse } from 'node-html-parser';
@@ -40,7 +40,7 @@ const getTracking = () => ({
 });
 
 const getTrackingHtml = (tracking: TrackingNumber): Promise<HTMLElement & { valid: boolean; }> =>
-  axios.get(tracking.trackingUrl.replace('%s', tracking.trackingNumber))
+  axios.get(tracking.trackingUrl.replace('%s', tracking.trackingNumber), { timeout: 5000 })
     .then(prop('data'))
     .then(html => parse(html)) as Promise<HTMLElement & { valid: boolean; }>;
 
@@ -64,20 +64,23 @@ const buildFedexData = (trackingNumber: string): string => encodeURI(`data={
 `);
 
 // @todo DHL, OnTrac
-const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => tracking.courier.code === 'usps'
+const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => (
+  tracking.courier.code === 'usps'
   ? getTrackingHtml(tracking)
     .then(html => html.querySelector('.delivery_status').querySelector('strong').innerHTML.toString())
   : tracking.courier.code ==='fedex'
-  ? axios.post('https://www.fedex.com/trackingCal/track', buildFedexData(tracking.trackingNumber))
+  ? axios.post('https://www.fedex.com/trackingCal/track', buildFedexData(tracking.trackingNumber), { timeout: 5000 })
     .then(pathOr('n/a', ['data', 'TrackPackagesResponse', 'packageList', 0, 'keyStatus']))
   : tracking.courier.code === 'ups'
   ? axios.post('https://wwwapps.ups.com/track/api/Track/GetStatus?loc=en_US', {
     Locale: 'en_US',
     Requester: 'st/trackdetails',
     TrackingNumber: [tracking.trackingNumber]
-  })
+  }, { timeout: 5000 })
     .then(pathOr('', ['data', 'trackDetails', 0, 'packageStatus']))
-  : Promise.resolve('n/a');
+  : Promise.resolve('n/a')
+)
+  .catch(() => 'Error conneecting to service');
 
 const setIcon = (tabId: number) => chrome.browserAction.setIcon({
   path: getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
@@ -106,6 +109,11 @@ const refreshTracking = () => Promise.all(storedTracking.filter(complement(isDel
   .then(concat(storedTracking.filter(isDelivered)))
   .then(saveTracking(refreshPopup));
 
+const saveEditTracking = (trackingNumber: string, editTracking: EditForm) => pipe(
+  // @ts-ignore sure, not.
+  map(when(whereEq({ trackingNumber }), mergeLeft(editTracking))),
+  saveTracking(refreshPopup),
+)(storedTracking);
 
 chrome.storage.local.get('tracking', ({ tracking }: { tracking: StoredTrackingNumber[] }) => {
   storedTracking = tracking || [];
@@ -149,6 +157,13 @@ chrome.runtime.onMessage.addListener((request: Message, sender, sendResponse) =>
         url: (request.data as TrackingNumber).trackingUrl
           .replace('%s', (request.data as TrackingNumber).trackingNumber)
       });
+      break;
+    case 'editTracking':
+      saveEditTracking(
+        (request.data as EditTrackingData).trackingNumber,
+        (request.data as EditTrackingData).editTracking
+      );
+      sendResponse();
       break;
   }
 });
