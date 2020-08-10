@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Test Extension",
+  "name": "Trackage",
   "version": "1.0.0",
+  "description": "Tracking your packages with ease",
   "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>" ],
   "content_scripts": [
     {
