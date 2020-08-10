@@ -7,6 +7,7 @@ import { ListComponent } from './list/list.component';
 import { DeleteConfirmComponent } from './delete-confirm/delete-confirm.component';
 import { TrackingEditComponent } from './tracking-edit/tracking-edit.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { HelpComponent } from './help/help.component';
 
 @NgModule({
   declarations: [
@@ -14,6 +15,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     ListComponent,
     DeleteConfirmComponent,
     TrackingEditComponent,
+    HelpComponent,
   ],
   imports: [
     BrowserModule,
