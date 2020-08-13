@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+/* eslint-disable @typescript-eslint/unbound-method */
+import { Component, OnInit, ApplicationRef } from '@angular/core';
 import { FormBuilder, FormControl, Validators, FormGroup, AbstractControl } from '@angular/forms';
 import { HttpService } from '../http.service';
 import { HelpForm } from '../common/types';
@@ -12,9 +13,15 @@ export class HelpComponent implements OnInit {
   helpForm: FormGroup;
   formSubmitted = false;
 
-  constructor(private formBuilder: FormBuilder, private httpService: HttpService) { }
+  constructor(private formBuilder: FormBuilder, private httpService: HttpService, private appRef: ApplicationRef) { }
 
   ngOnInit(): void {
+    chrome.identity.getProfileUserInfo(({ email }) => {
+      this.helpForm.get('email').setValue(email);
+      this.helpForm.get('email').markAsTouched();
+      this.appRef.tick();
+    });
+
     this.helpForm = this.formBuilder.group({
       email: new FormControl('', [
         Validators.required,

@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Test Extension",
   "version": "1.0.0",
-  "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>" ],
+  "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>", "identity", "identity.email" ],
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
