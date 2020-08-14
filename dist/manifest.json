@@ -1,8 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "Test Extension",
+  "name": "Trackage",
   "version": "1.0.0",
   "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>", "identity", "identity.email" ],
+  "description": "Detects your tracking numbers as you browse! Store them all in one place and recieve updates as they progress.",
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
@@ -19,7 +20,8 @@
     "default_popup": "index.html#/list"
   },
   "icons": {
-    "128": "./app/assets/icon128.png"
+    "128": "./app/assets/icon.png",
+    "32": "./app/assets/pin.png"
   },
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
