@@ -1,16 +1,17 @@
-<nav class="navbar">
-  <div class="navbar-end">
-    <div class="navbar-item">
-      <div class="buttons">
-        <button routerLink="/help" class="button is-small">
-          <span class="icon is-small">
-            <i class="fas fa-question-circle"></i>
-          </span>
-        </button>
-      </div>
-    </div>
-  </div>
-</nav>
 <section class="section">
   <router-outlet></router-outlet>
 </section>
+<div class="columns is-mobile is-vcentered">
+  <div class="column is-offset-one-quarter">
+    <a class="navbar-item" routerLink="/list">
+      <img src="/app/assets/icon.png">
+    </a>
+  </div>
+  <div class="column">
+    <button routerLink="/help" class="button is-small">
+      <span class="icon is-small">
+        <i class="fas fa-question-circle"></i>
+      </span>
+    </button>
+  </div>
+</div>
