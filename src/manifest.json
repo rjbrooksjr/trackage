@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Trackage",
   "version": "1.0.0",
-  "description": "Tracking your packages with ease",
+  "description": "Detects your tracking numbers as you browse! Store them all in one place and recieve updates as they progress.",
   "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>" ],
   "content_scripts": [
     {
@@ -20,7 +20,8 @@
     "default_popup": "index.html#/list"
   },
   "icons": {
-    "128": "./app/assets/icon128.png"
+    "128": "./app/assets/icon.png",
+    "32": "./app/assets/pin.png"
   },
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
