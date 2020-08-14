@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Test Extension",
+  "name": "Trackage",
   "version": "1.0.0",
   "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>", "identity", "identity.email" ],
   "content_scripts": [
@@ -19,7 +19,7 @@
     "default_popup": "index.html#/list"
   },
   "icons": {
-    "128": "./app/assets/icon.png"
+    "128": "./app/assets/icon128.png"
   },
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

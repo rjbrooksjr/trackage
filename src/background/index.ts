@@ -83,7 +83,7 @@ const getTrackingStatus = (tracking: TrackingNumber): Promise<string> => (
   .catch(() => 'Error conneecting to service');
 
 const setIcon = (tabId: number) => chrome.browserAction.setIcon({
-  path: getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon.png',
+  path: getTracking().foundTracking.length > 0 ? './app/assets/add.png' : './app/assets/icon128.png',
   ...tabId && { tabId },
 });
 
