@@ -1,6 +1,5 @@
 import { Component, OnInit, ApplicationRef } from '@angular/core';
 import { Message, TrackingResponse, StoredTrackingNumber } from '../common/types';
-import { LogService } from '../services/log.service';
 import { TrackingNumber } from 'ts-tracking-number';
 import { evolve, always } from 'ramda';
 
@@ -14,7 +13,7 @@ export class ListComponent implements OnInit {
   storedTracking: StoredTrackingNumber[] = [];
   editing: StoredTrackingNumber = null;
 
-  constructor(private appRef: ApplicationRef, private log: LogService) { }
+  constructor(private appRef: ApplicationRef) { }
 
   ngOnInit(): void {
     this.refresh();

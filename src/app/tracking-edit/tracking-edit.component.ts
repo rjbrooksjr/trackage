@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { StoredTrackingNumber, EditForm } from '../common/types';
-import { LogService } from '../services/log.service';
 
 @Component({
   selector: 'tracking-edit',
@@ -14,7 +13,7 @@ export class TrackingEditComponent implements OnInit {
 
   editForm;
 
-  constructor(private formBuilder: FormBuilder, private logService: LogService) { }
+  constructor(private formBuilder: FormBuilder) { }
 
   ngOnInit(): void {
     this.editForm = this.formBuilder.group({

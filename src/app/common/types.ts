@@ -25,3 +25,8 @@ export type StoredTrackingNumber = TrackingNumber & {
 export type EditForm = {
   label?: string;
 };
+
+export type HelpForm = {
+  email: string;
+  text: string;
+};

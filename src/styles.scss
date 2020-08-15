@@ -1,8 +1,11 @@
 @charset "utf-8";
 
+@import "../node_modules/bulma/sass/utilities/initial-variables.sass";
+
 $section-padding: 1rem .75rem;
 $modal-card-head-padding: 10px;
 $modal-card-body-padding: 10px;
+$navbar-breakpoint: $gap;
 
 @import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/@creativebulma/bulma-tooltip/src/sass/index.sass";

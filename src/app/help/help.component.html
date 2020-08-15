@@ -1,0 +1,29 @@
+<div *ngIf="!formSubmitted; else thanks">
+  <h3 class="mb-3">Please let us know if you are having any problems, or would like to offer any suggestions for new features.</h3>
+  <form [formGroup]="helpForm" (ngSubmit)=sendHelp(helpForm.value)>
+    <div class="field">
+      <div class="label">Email</div>
+      <div class="control">
+        <input class="input" type="email" formControlName="email" value="{{ userEmail }}">
+        <div *ngIf="email.invalid && (email.dirty || email.touched)">
+          <p *ngIf="email.errors" class="help is-danger">This email is invalid</p>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="label">Message</label>
+      <div class="control">
+        <textarea class="textarea" formControlName="text"></textarea>
+        <div *ngIf="text.invalid && (text.dirty || text.touched)">
+          <p *ngIf="text.errors" class="help is-danger">A message is required</p>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <button class="button is-success" type="submit" [disabled]="!helpForm.valid">Send</button>
+    </div>
+  </form>
+</div>
+<ng-template #thanks>
+  <p>Thank you! We'll get back to you shortly.</p>
+</ng-template>

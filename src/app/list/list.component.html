@@ -1,17 +1,3 @@
-<nav class="navbar">
-  <div class="navbar-end">
-    <div class="navbar-item">
-      <div class="buttons">
-        <button (click)="refreshTracking()" class="button is-small">
-          <span class="icon is-small">
-            <i class="fas fa-sync"></i>
-          </span>
-        </button>
-      </div>
-    </div>
-  </div>
-</nav>
-
 <div *ngIf="foundTracking.length" class="section">
   <h2>Found Tracking Numbers</h2>
   <table class="table is-fullwidth">
@@ -35,9 +21,22 @@
   </table>
 </div>
 
-<div class="section">
-  <h2>Saved Tracking Numbers</h2>
-  <div *ngIf="storedTracking.length; else nothingStored" class="container">
+<div *ngIf="storedTracking.length" class="section">
+  <nav class="level is-mobile">
+    <div class="level-left">
+      <h2 class="level-item">Saved Tracking Numbers</h2>
+    </div>
+    <div class="level-right">
+      <div class="level-item">
+        <button (click)="refreshTracking()" class="button is-small">
+          <span class="icon is-small">
+            <i class="fas fa-sync"></i>
+          </span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <div *ngIf="storedTracking.length" class="container">
     <table class="table is-fullwidth">
       <tr *ngFor="let tracking of storedTracking">
         <td>
@@ -68,7 +67,16 @@
       </tr>
     </table>
   </div>
-  <ng-template #nothingStored><div class="container"><p class="is-size-7">None Yet</p></div></ng-template>
+</div>
+
+<div *ngIf="!foundTracking.length && !storedTracking.length" class="has-text-centered">
+  <figure class="image container is-64x64">
+    <img src="/app/assets/pin-selected.png">
+  </figure>
+  <p class="mt-4">
+    We haven't collected any tracking numbers yet! Once you browse to a page where we find one, the icon will turn
+    green to let you know and you can check back here.
+  </p>
 </div>
 
 <tracking-edit *ngIf="editing" [tracking]="editing" (done)="doneEditing()"></tracking-edit>
