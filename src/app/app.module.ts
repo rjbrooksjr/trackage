@@ -9,6 +9,7 @@ import { DeleteConfirmComponent } from './delete-confirm/delete-confirm.componen
 import { TrackingEditComponent } from './tracking-edit/tracking-edit.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HelpComponent } from './help/help.component';
+import { ManualEntryComponent } from './manual-entry/manual-entry.component';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { HelpComponent } from './help/help.component';
     DeleteConfirmComponent,
     TrackingEditComponent,
     HelpComponent,
+    ManualEntryComponent,
   ],
   imports: [
     BrowserModule,

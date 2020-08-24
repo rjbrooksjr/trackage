@@ -26,6 +26,11 @@ export type EditForm = {
   label?: string;
 };
 
+export type AddForm = {
+  label?: string;
+  trackingNumber: string;
+};
+
 export type HelpForm = {
   email: string;
   text: string;
