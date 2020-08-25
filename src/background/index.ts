@@ -135,6 +135,7 @@ chrome.runtime.onMessage.addListener((request: Message, sender, sendResponse) =>
       sendResponse(getTracking());
       break;
     case 'saveTracking':
+      console.log('saving', request.data);
       storeTrackingNumber(request.data as TrackingNumber, storedTracking);
       break;
     case 'removeTracking':

@@ -1,7 +1,8 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AddForm } from '../common/types';
-import { getTracking } from 'ts-tracking-number';
+import { getTracking, TrackingNumber } from 'ts-tracking-number';
+import { mergeRight } from 'ramda';
 
 const trackingValidator = (control: AbstractControl): ValidationErrors | null => getTracking(control.value)
   ? null
@@ -23,7 +24,7 @@ export class ManualEntryComponent implements OnInit {
   ngOnInit(): void {
     this.addForm = this.formBuilder.group({
       label: '',
-      trackingNumer: new FormControl('', [
+      trackingNumber: new FormControl('', [
         // eslint-disable-next-line @typescript-eslint/unbound-method
         Validators.required,
         trackingValidator,
@@ -36,11 +37,14 @@ export class ManualEntryComponent implements OnInit {
   }
 
   saveTracking(saveData: AddForm): void {
-    console.log('ok', saveData);
+    const tn: TrackingNumber = mergeRight(getTracking(saveData.trackingNumber), { label: saveData.label });
 
-    // TrackingNumber
+    chrome.runtime.sendMessage({ command: 'saveTracking', data: [tn] });
+  }
 
-    // chrome.runtime.sendMessage({ command: 'saveTracking', data: [tracking] });
+  get trackingNumber(): AbstractControl {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    return this.addForm.get('trackingNumber') as AbstractControl;
   }
 
 }

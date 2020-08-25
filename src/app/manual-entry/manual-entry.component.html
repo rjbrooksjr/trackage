@@ -17,11 +17,16 @@
           <label class="label">Tracking Number</label>
           <div class="control">
             <input class="input" type="text" formControlName="trackingNumber">
+            <p>{{ trackingNumber.errors | json }}</p>
+            <div *ngIf="trackingNumber.invalid && (trackingNumber.dirty || trackingNumber.touched)">
+              <p *ngIf="trackingNumber.required" class="help is-danger">This tracking number is required</p>
+              <p *ngIf="trackingNumber.errors" class="help is-danger">This tracking number is invalid</p>
+            </div>
           </div>
         </div>
       </section>
       <footer class="modal-card-foot">
-        <button class="button is-success" type="submit">Save</button>
+        <button class="button is-success" type="submit" [disabled]="!addForm.valid">Save</button>
       </footer>
     </div>
   </div>
