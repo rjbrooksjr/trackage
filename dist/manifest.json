@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Trackage",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "permissions": [ "activeTab", "alarms", "storage", "webRequest", "<all_urls>", "identity", "identity.email" ],
   "description": "Detects your tracking numbers as you browse! Store them all in one place and recieve updates as they progress.",
   "content_scripts": [

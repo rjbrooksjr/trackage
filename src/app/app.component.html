@@ -7,6 +7,11 @@
   <div class="navbar-end">
     <div class="navbar-item">
       <div class="buttons">
+        <button (click)="adding=true" class="button is-small">
+          <span class="icon is-small">
+            <i class="fas fa-plus"></i>
+          </span>
+        </button>
         <button routerLink="/help" class="button is-small">
           <span class="icon is-small">
             <i class="fas fa-question-circle"></i>
@@ -19,3 +24,4 @@
 <section class="section">
   <router-outlet></router-outlet>
 </section>
+<manual-entry *ngIf="adding" (done)="doneAdding()"></manual-entry>

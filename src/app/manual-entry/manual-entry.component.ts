@@ -39,7 +39,10 @@ export class ManualEntryComponent implements OnInit {
   saveTracking(saveData: AddForm): void {
     const tn: TrackingNumber = mergeRight(getTracking(saveData.trackingNumber), { label: saveData.label });
 
-    chrome.runtime.sendMessage({ command: 'saveTracking', data: [tn] });
+    chrome.runtime.sendMessage({
+      command: 'saveTracking',
+      data: [tn]
+    }, () => this.done.emit(true));
   }
 
   get trackingNumber(): AbstractControl {
